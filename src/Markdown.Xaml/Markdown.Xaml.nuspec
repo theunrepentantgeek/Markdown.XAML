@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <authors>$author$</authors>
+        <owners>Florian Mücke</owners>
+        <licenseUrl>https://github.com/theunrepentantgeek/Markdown.XAML/blob/master/License.txt</licenseUrl>
+        <projectUrl>https://github.com/theunrepentantgeek/Markdown.XAML</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>$description$</description>
+        <releaseNotes>Initial release</releaseNotes>
+        <copyright>Copyright (c) 2010 Bevan Arps</copyright>
+        <tags>mardown xaml flowdocument</tags>
+        <dependencies />
+    </metadata>
+</package>
