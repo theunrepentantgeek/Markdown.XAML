@@ -917,27 +917,9 @@ namespace Markdown.Xaml
             {
                 tableHeaderRG.Style = TableHeaderStyle;
             }
-            {
-                var tableHeader = new TableRow();
-                foreach (var headerItemIdx in Enumerable.Range(0, headers.Length))
-                {
-                    var headerColTxt = headers[headerItemIdx];
 
-                    var headerParagraph = Create<Paragraph, Inline>(RunSpanGamut(headerColTxt));
-                    var headerCell = new TableCell(headerParagraph);
-                    if (aligns[headerItemIdx].HasValue)
-                    {
-                        headerCell.TextAlignment = aligns[headerItemIdx].Value;
-                    }
-
-                    tableHeader.Cells.Add(headerCell);
-                }
-                while (tableHeader.Cells.Count < maxColCount)
-                {
-                    tableHeader.Cells.Add(new TableCell());
-                }
-                tableHeaderRG.Rows.Add(tableHeader);
-            }
+            var tableHeader = CreateTableRow(headers, aligns);
+            tableHeaderRG.Rows.Add(tableHeader);
             table.RowGroups.Add(tableHeaderRG);
 
             // row
@@ -948,25 +930,7 @@ namespace Markdown.Xaml
             }
             foreach (string[] rowAry in rowList)
             {
-                var tableBody = new TableRow();
-
-                foreach (var rowItemIdx in Enumerable.Range(0, rowAry.Length))
-                {
-                    var rowItemTxt = rowAry[rowItemIdx];
-
-                    var cellParagraph = Create<Paragraph, Inline>(RunSpanGamut(rowItemTxt));
-                    var rowCell = new TableCell(cellParagraph);
-                    if (aligns[rowItemIdx].HasValue)
-                    {
-                        rowCell.TextAlignment = aligns[rowItemIdx].Value;
-                    }
-
-                    tableBody.Cells.Add(rowCell);
-                }
-                while (tableBody.Cells.Count < maxColCount)
-                {
-                    tableBody.Cells.Add(new TableCell());
-                }
+                var tableBody = CreateTableRow(rowAry, aligns);
                 tableBodyRG.Rows.Add(tableBody);
             }
             table.RowGroups.Add(tableBodyRG);
@@ -974,6 +938,33 @@ namespace Markdown.Xaml
             return table;
         }
 
+        private TableRow CreateTableRow(string[] txts, List<TextAlignment?> aligns)
+        {
+            var tableRow = new TableRow();
+
+            foreach (var idx in Enumerable.Range(0, txts.Length))
+            {
+                var txt = txts[idx];
+                var align = aligns[idx];
+
+                var paragraph = Create<Paragraph, Inline>(RunSpanGamut(txt));
+                var cell = new TableCell(paragraph);
+
+                if (align.HasValue)
+                {
+                    cell.TextAlignment = align.Value;
+                }
+
+                tableRow.Cells.Add(cell);
+            }
+
+            while (tableRow.Cells.Count < aligns.Count)
+            {
+                tableRow.Cells.Add(new TableCell());
+            }
+
+            return tableRow;
+        }
 
         private static Regex _codeSpan = new Regex(@"
                     (?<!\\)   # Character before opening ` can't be a backslash
