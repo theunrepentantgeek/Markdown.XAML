@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -186,7 +186,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             text = Normalize(text);
@@ -211,7 +211,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             return DoHeaders(text,
@@ -241,7 +241,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             return DoCodeSpans(text,
@@ -279,7 +279,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             // split on two or more newlines
@@ -413,7 +413,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             return Evaluate(text, _imageInline, ImageInlineEvaluator, defaultHandler);
@@ -423,7 +423,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             string linkText = match.Groups[2].Value;
@@ -494,7 +494,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             // Next, inline-style links: [link text](url "optional title") or [link text](url "optional title")
@@ -505,7 +505,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             string linkText = match.Groups[2].Value;
@@ -565,7 +565,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             return Evaluate<Block>(text, _headerSetext, m => SetextHeaderEvaluator(m),
@@ -576,7 +576,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             string header = match.Groups[1].Value;
@@ -590,7 +590,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             string header = match.Groups[2].Value;
@@ -602,7 +602,7 @@ namespace Markdown.Xaml
         {
             if (content == null)
             {
-                throw new ArgumentNullException("content");
+                throw new ArgumentNullException(nameof(content));
             }
 
             var block = Create<Paragraph, Inline>(content);
@@ -665,7 +665,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             return Evaluate(text, _horizontalRules, RuleEvaluator, defaultHandler);
@@ -675,7 +675,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             var separator = new Separator();
@@ -721,7 +721,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             // We use a different prefix before nested lists than top-level lists.
@@ -736,7 +736,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             string list = match.Groups[1].Value;
@@ -811,7 +811,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             string item = match.Groups[4].Value;
@@ -850,7 +850,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("t  ext");
+                throw new ArgumentNullException(nameof(text));
             }
 
             return Evaluate(text, _table, TableEvalutor, defaultHandler);
@@ -860,7 +860,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             var wholeTable = match.Groups[1].Value;
@@ -998,7 +998,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             //    * You can use multiple backticks as the delimiters if you want to
@@ -1030,7 +1030,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             string span = match.Groups[2].Value;
@@ -1063,7 +1063,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             // <strong> must go first, then <em>
@@ -1085,7 +1085,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             var content = match.Groups[contentGroup].Value;
@@ -1096,7 +1096,7 @@ namespace Markdown.Xaml
         {
             if (match == null)
             {
-                throw new ArgumentNullException("match");
+                throw new ArgumentNullException(nameof(match));
             }
 
             var content = match.Groups[contentGroup].Value;
@@ -1123,7 +1123,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             var output = new StringBuilder(text.Length);
@@ -1181,7 +1181,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             var sb = new StringBuilder(text.Length * count);
@@ -1206,7 +1206,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             var matches = expression.Matches(text);
@@ -1244,7 +1244,7 @@ namespace Markdown.Xaml
         {
             if (text == null)
             {
-                throw new ArgumentNullException("text");
+                throw new ArgumentNullException(nameof(text));
             }
 
             var lines = _lbrk.Split(text);
