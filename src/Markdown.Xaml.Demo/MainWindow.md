@@ -37,6 +37,14 @@ table begin string
 |a|b|c|d|
 table end string
 
+This table is pre-formatted in text 
+
+|    Alpha    | Beta        |       Gamma | Delta       |
+|:-----------:|:------------|------------:|
+| a1234567890 | b1234567890 | c1234567890 | d1234567890 |
+|a            | b           |    c        |           d |
+
+
 * Separator
 ***
 
