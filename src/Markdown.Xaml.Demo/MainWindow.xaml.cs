@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -40,9 +41,12 @@ namespace Markdown.Demo
             var subjectAssembly = subjectType.Assembly;
             using (Stream stream = subjectAssembly.GetManifestResourceStream(subjectType.FullName + ".md"))
             {
-                if (stream == null)
+                if (stream is null)
                 {
-                    return String.Format("Could not find sample text *{0}*.md", subjectType.FullName);
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Could not find sample text *{0}*.md", 
+                        subjectType.FullName);
                 }
 
                 using (StreamReader reader = new StreamReader(stream))

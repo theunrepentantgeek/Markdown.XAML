@@ -1,10 +1,12 @@
-﻿using ApprovalTests;
-using ApprovalTests.Reporters;
-using NUnit.Framework;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Markup;
 using System.Xml;
+
+using ApprovalTests;
+using ApprovalTests.Reporters;
+using NUnit.Framework;
 
 namespace Markdown.Xaml.Tests
 {
@@ -22,7 +24,7 @@ namespace Markdown.Xaml.Tests
         }
 
         [Test]
-        [RequiresSTA]
+        [Apartment(ApartmentState.STA)]
         public void Transform_givenLists_generatesExpectedResult()
         {
             var text = LoadText("Lists.md");
@@ -40,7 +42,7 @@ namespace Markdown.Xaml.Tests
         }
 
         [Test]
-        [RequiresSTA]
+        [Apartment(ApartmentState.STA)]
         public void Transform_givenHorizontalRules_generatesExpectedResult()
         {
             var text = LoadText("HorizontalRules.md");
@@ -50,7 +52,7 @@ namespace Markdown.Xaml.Tests
         }
 
         [Test]
-        [RequiresSTA]
+        [Apartment(ApartmentState.STA)]
         public void Transform_givenLinksInline_generatesExpectedResult()
         {
             var text = LoadText("Links_inline_style.md");
@@ -60,7 +62,7 @@ namespace Markdown.Xaml.Tests
         }
 
         [Test]
-        [RequiresSTA]
+        [Apartment(ApartmentState.STA)]
         public void Transform_givenTextStyles_generatesExpectedResult()
         {
             var text = LoadText("Text_style.md");
@@ -70,7 +72,7 @@ namespace Markdown.Xaml.Tests
         }
 
         [Test]
-        [RequiresSTA]
+        [Apartment(ApartmentState.STA)]
         public void Transform_givenImages_generatesExpectedResult()
         {
             var text = LoadText("Images.md");
