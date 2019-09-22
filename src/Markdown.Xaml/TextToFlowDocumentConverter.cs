@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
@@ -61,7 +61,7 @@ namespace Markdown.Xaml
             throw new NotImplementedException();
         }
 
-        private Lazy<Markdown> mMarkdown
+        private readonly Lazy<Markdown> mMarkdown
             = new Lazy<Markdown>(() => new Markdown());
     }
 }
