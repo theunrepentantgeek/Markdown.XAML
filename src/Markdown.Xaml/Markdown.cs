@@ -11,7 +11,6 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Markdown.Xaml
 {
@@ -48,15 +47,15 @@ namespace Markdown.Xaml
             set { SetValue(DocumentStyleProperty, value); }
         }
 
-		public Style NormalParagraphStyle
-		{
-			get { return (Style)GetValue(NormalParagraphStyleProperty); }
-			set { SetValue(NormalParagraphStyleProperty, value); }
-		}
+        public Style NormalParagraphStyle
+        {
+            get { return (Style)GetValue(NormalParagraphStyleProperty); }
+            set { SetValue(NormalParagraphStyleProperty, value); }
+        }
 
-		// Using a DependencyProperty as the backing store for NormalParagraphStyle.  This enables animation, styling, binding, etc...
-		public static readonly DependencyProperty NormalParagraphStyleProperty =
-			DependencyProperty.Register("NormalParagraphStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+        // Using a DependencyProperty as the backing store for NormalParagraphStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NormalParagraphStyleProperty =
+            DependencyProperty.Register("NormalParagraphStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         // Using a DependencyProperty as the backing store for DocumentStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DocumentStyleProperty =
@@ -101,7 +100,7 @@ namespace Markdown.Xaml
         // Using a DependencyProperty as the backing store for Heading4Style.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty Heading4StyleProperty =
             DependencyProperty.Register("Heading4Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
-    
+
         public Style CodeStyle
         {
             get { return (Style)GetValue(CodeStyleProperty); }
@@ -144,8 +143,8 @@ namespace Markdown.Xaml
 
         public string AssetPathRoot
         {
-          get { return (string)GetValue(AssetPathRootProperty); }
-          set { SetValue(AssetPathRootProperty, value); }
+            get { return (string)GetValue(AssetPathRootProperty); }
+            set { SetValue(AssetPathRootProperty, value); }
         }
 
         public static readonly DependencyProperty AssetPathRootProperty =
@@ -288,9 +287,9 @@ namespace Markdown.Xaml
 
             foreach (var g in grafs)
             {
-				var block = Create<Paragraph, Inline>(RunSpanGamut(g));
-				block.Style = this.NormalParagraphStyle;
-				yield return block;
+                var block = Create<Paragraph, Inline>(RunSpanGamut(g));
+                block.Style = this.NormalParagraphStyle;
+                yield return block;
             }
         }
 
@@ -438,13 +437,13 @@ namespace Markdown.Xaml
                 }
 
                 imgSource = new BitmapImage();
-				imgSource.BeginInit();
-				imgSource.CacheOption = BitmapCacheOption.None;
-				imgSource.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-				imgSource.CacheOption = BitmapCacheOption.OnLoad;
-				imgSource.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-				imgSource.UriSource = new Uri(url);
-				imgSource.EndInit();
+                imgSource.BeginInit();
+                imgSource.CacheOption = BitmapCacheOption.None;
+                imgSource.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+                imgSource.CacheOption = BitmapCacheOption.OnLoad;
+                imgSource.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                imgSource.UriSource = new Uri(url);
+                imgSource.EndInit();
             }
             catch (Exception)
             {
@@ -516,11 +515,11 @@ namespace Markdown.Xaml
             var result = Create<Hyperlink, Inline>(RunSpanGamut(linkText));
             result.Command = HyperlinkCommand;
             result.CommandParameter = url;
-			if (!string.IsNullOrWhiteSpace(title))
-			{
-				result.ToolTip = title;
-			}
-			if (LinkStyle != null)
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                result.ToolTip = title;
+            }
+            if (LinkStyle != null)
             {
                 result.Style = LinkStyle;
             }
@@ -679,13 +678,13 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException("match");
             }
 
-			var separator = new Separator();
-			if (SeparatorStyle != null)
-			{
-				separator.Style = SeparatorStyle;
-			}
+            var separator = new Separator();
+            if (SeparatorStyle != null)
+            {
+                separator.Style = SeparatorStyle;
+            }
 
-			var container = new BlockUIContainer(separator);
+            var container = new BlockUIContainer(separator);
             return container;
         }
 
@@ -1239,7 +1238,7 @@ namespace Markdown.Xaml
         }
 
         private static Regex _eoln = new Regex("\\s+");
-		private static Regex _lbrk = new Regex(@"\ {2,}\n");
+        private static Regex _lbrk = new Regex(@"\ {2,}\n");
 
         public IEnumerable<Inline> DoText(string text)
         {
@@ -1248,17 +1247,17 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException("text");
             }
 
-			var lines = _lbrk.Split(text);
-			bool first = true;
-			foreach (var line in lines)
-			{
-				if (first)
-					first = false;
-				else
-					yield return new LineBreak();
-				var t = _eoln.Replace(line, " ");
-				yield return new Run(t);
-			}
+            var lines = _lbrk.Split(text);
+            bool first = true;
+            foreach (var line in lines)
+            {
+                if (first)
+                    first = false;
+                else
+                    yield return new LineBreak();
+                var t = _eoln.Replace(line, " ");
+                yield return new Run(t);
+            }
         }
     }
 }
