@@ -184,7 +184,7 @@ namespace Markdown.Xaml
 
         public FlowDocument Transform(string text)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -209,7 +209,7 @@ namespace Markdown.Xaml
         /// </summary>
         private IEnumerable<Block> RunBlockGamut(string text)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -239,7 +239,7 @@ namespace Markdown.Xaml
         /// </summary>
         private IEnumerable<Inline> RunSpanGamut(string text)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -277,7 +277,7 @@ namespace Markdown.Xaml
         /// </summary>
         private IEnumerable<Block> FormParagraphs(string text)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -303,7 +303,7 @@ namespace Markdown.Xaml
         {
             // in other words [this] and [this[also]] and [this[also[too]]]
             // up to _nestDepth
-            if (_nestedBracketsPattern == null)
+            if (_nestedBracketsPattern is null)
                 _nestedBracketsPattern =
                     RepeatString(@"
                     (?>              # Atomic matching
@@ -327,7 +327,7 @@ namespace Markdown.Xaml
         {
             // in other words (this) and (this(also)) and (this(also(too)))
             // up to _nestDepth
-            if (_nestedParensPattern == null)
+            if (_nestedParensPattern is null)
                 _nestedParensPattern =
                     RepeatString(@"
                     (?>              # Atomic matching
@@ -351,7 +351,7 @@ namespace Markdown.Xaml
         {
             // in other words (this) and (this(also)) and (this(also(too)))
             // up to _nestDepth
-            if (_nestedParensPatternWithWhiteSpace == null)
+            if (_nestedParensPatternWithWhiteSpace is null)
                 _nestedParensPatternWithWhiteSpace =
                     RepeatString(@"
                     (?>              # Atomic matching
@@ -411,7 +411,7 @@ namespace Markdown.Xaml
         /// </remarks>
         private IEnumerable<Inline> DoImages(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -421,7 +421,7 @@ namespace Markdown.Xaml
 
         private Inline ImageInlineEvaluator(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -451,7 +451,7 @@ namespace Markdown.Xaml
             }
 
             Image image = new Image { Source = imgSource, Tag = linkText };
-            if (ImageStyle == null)
+            if (ImageStyle is null)
             {
                 image.Margin = new Thickness(0);
             }
@@ -492,7 +492,7 @@ namespace Markdown.Xaml
         /// </remarks>
         private IEnumerable<Inline> DoAnchors(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -503,7 +503,7 @@ namespace Markdown.Xaml
 
         private Inline AnchorInlineEvaluator(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -563,7 +563,7 @@ namespace Markdown.Xaml
         /// </remarks>
         private IEnumerable<Block> DoHeaders(string text, Func<string, IEnumerable<Block>> defaultHandler)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -574,7 +574,7 @@ namespace Markdown.Xaml
 
         private Block SetextHeaderEvaluator(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -588,7 +588,7 @@ namespace Markdown.Xaml
 
         private Block AtxHeaderEvaluator(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -600,7 +600,7 @@ namespace Markdown.Xaml
 
         public Block CreateHeader(int level, IEnumerable<Inline> content)
         {
-            if (content == null)
+            if (content is null)
             {
                 throw new ArgumentNullException(nameof(content));
             }
@@ -663,7 +663,7 @@ namespace Markdown.Xaml
         /// </remarks>
         private IEnumerable<Block> DoHorizontalRules(string text, Func<string, IEnumerable<Block>> defaultHandler)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -673,7 +673,7 @@ namespace Markdown.Xaml
 
         private Block RuleEvaluator(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -719,7 +719,7 @@ namespace Markdown.Xaml
         /// </summary>
         private IEnumerable<Block> DoLists(string text, Func<string, IEnumerable<Block>> defaultHandler)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -734,7 +734,7 @@ namespace Markdown.Xaml
 
         private Block ListEvaluator(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -809,7 +809,7 @@ namespace Markdown.Xaml
 
         private ListItem ListItemEvaluator(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -848,7 +848,7 @@ namespace Markdown.Xaml
 
         public IEnumerable<Block> DoTable(string text, Func<string, IEnumerable<Block>> defaultHandler)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -858,7 +858,7 @@ namespace Markdown.Xaml
 
         private Block TableEvalutor(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -996,7 +996,7 @@ namespace Markdown.Xaml
         /// </summary>
         private IEnumerable<Inline> DoCodeSpans(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -1028,7 +1028,7 @@ namespace Markdown.Xaml
 
         private Inline CodeSpanEvaluator(Match match)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -1061,7 +1061,7 @@ namespace Markdown.Xaml
         /// </summary>
         private IEnumerable<Inline> DoItalicsAndBold(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -1083,7 +1083,7 @@ namespace Markdown.Xaml
 
         private Inline ItalicEvaluator(Match match, int contentGroup)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -1094,7 +1094,7 @@ namespace Markdown.Xaml
 
         private Inline BoldEvaluator(Match match, int contentGroup)
         {
-            if (match == null)
+            if (match is null)
             {
                 throw new ArgumentNullException(nameof(match));
             }
@@ -1121,7 +1121,7 @@ namespace Markdown.Xaml
         /// </summary>
         private string Normalize(string text)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -1179,7 +1179,7 @@ namespace Markdown.Xaml
         /// </summary>
         private static string RepeatString(string text, int count)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -1204,7 +1204,7 @@ namespace Markdown.Xaml
 
         private IEnumerable<T> Evaluate<T>(string text, Regex expression, Func<Match, T> build, Func<string, IEnumerable<T>> rest)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }
@@ -1242,7 +1242,7 @@ namespace Markdown.Xaml
 
         public IEnumerable<Inline> DoText(string text)
         {
-            if (text == null)
+            if (text is null)
             {
                 throw new ArgumentNullException(nameof(text));
             }

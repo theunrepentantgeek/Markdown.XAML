@@ -40,7 +40,7 @@ namespace Markdown.Demo
             var subjectAssembly = subjectType.Assembly;
             using (Stream stream = subjectAssembly.GetManifestResourceStream(subjectType.FullName + ".md"))
             {
-                if (stream == null)
+                if (stream is null)
                 {
                     return String.Format("Could not find sample text *{0}*.md", subjectType.FullName);
                 }

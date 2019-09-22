@@ -34,7 +34,7 @@ namespace Markdown.Xaml
         /// <param name="culture">The culture to use in the converter.</param>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == null)
+            if (value is null)
             {
                 return null;
             }
