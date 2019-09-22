@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Cache;
 using System.Text;
@@ -366,7 +367,8 @@ namespace Markdown.Xaml
             return _nestedParensPatternWithWhiteSpace;
         }
 
-        private static readonly Regex _imageInline = new Regex(string.Format(@"
+        private static readonly Regex _imageInline = new Regex(
+            string.Format(CultureInfo.InvariantCulture, @"
                 (                           # wrap whole match in $1
                     !\[
                         ({0})               # link text = $2
@@ -382,10 +384,13 @@ namespace Markdown.Xaml
                         #[ ]*                # ignore any spaces between closing quote and )
                         )?                  # title is optional
                     \)
-                )", GetNestedBracketsPattern(), GetNestedParensPatternWithWhiteSpace()),
+                )",
+            GetNestedBracketsPattern(),
+            GetNestedParensPatternWithWhiteSpace()),
                   RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
-        private static readonly Regex _anchorInline = new Regex(string.Format(@"
+        private static readonly Regex _anchorInline = new Regex(
+            string.Format(CultureInfo.InvariantCulture, @"
                 (                           # wrap whole match in $1
                     \[
                         ({0})               # link text = $2
@@ -469,12 +474,13 @@ namespace Markdown.Xaml
                 binding.Mode = BindingMode.OneWay;
 
                 BindingExpressionBase bindingExpression = BindingOperations.SetBinding(image, Image.WidthProperty, binding);
-                EventHandler downloadCompletedHandler = null;
-                downloadCompletedHandler = (sender, e) =>
-                    {
-                        imgSource.DownloadCompleted -= downloadCompletedHandler;
-                        bindingExpression.UpdateTarget();
-                    };
+                
+                void downloadCompletedHandler(object sender, EventArgs e)
+                {
+                    imgSource.DownloadCompleted -= downloadCompletedHandler;
+                    bindingExpression.UpdateTarget();
+                }
+
                 imgSource.DownloadCompleted += downloadCompletedHandler;
             }
             else
@@ -581,7 +587,7 @@ namespace Markdown.Xaml
             }
 
             string header = match.Groups[1].Value;
-            int level = match.Groups[2].Value.StartsWith("=") ? 1 : 2;
+            int level = match.Groups[2].Value.StartsWith("=", StringComparison.Ordinal) ? 1 : 2;
 
             //TODO: Style the paragraph based on the header level
             return CreateHeader(level, RunSpanGamut(header.Trim()));
@@ -689,7 +695,8 @@ namespace Markdown.Xaml
             return container;
         }
 
-        private static readonly string _wholeList = string.Format(@"
+        private static readonly string _wholeList
+            = string.Format(CultureInfo.InvariantCulture, @"
             (                               # $1 = whole list
               (                             # $2
                 [ ]{{0,{1}}}
@@ -707,7 +714,7 @@ namespace Markdown.Xaml
                     {0}[ ]+
                   )
               )
-            )", string.Format("(?:{0}|{1})", _markerUL, _markerOL), _tabWidth - 1);
+            )", string.Format(CultureInfo.InvariantCulture, "(?:{0}|{1})", _markerUL, _markerOL), _tabWidth - 1);
 
         private static readonly Regex _listNested = new Regex(@"^" + _wholeList,
             RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
@@ -787,7 +794,7 @@ namespace Markdown.Xaml
                 // Trim trailing blank lines:
                 list = Regex.Replace(list, @"\n{2,}\z", "\n");
 
-                string pattern = string.Format(
+                string pattern = string.Format(CultureInfo.InvariantCulture,
                   @"(\n)?                      # leading line = $1
                 (^[ ]*)                    # leading whitespace = $2
                 ({0}) [ ]+                 # list marker = $3
@@ -1176,18 +1183,18 @@ namespace Markdown.Xaml
         }
 
         /// <summary>
-        /// this is to emulate what's evailable in PHP
+        /// this is to emulate what's available in PHP
         /// </summary>
-        private static string RepeatString(string text, int count)
+        private static string RepeatString(string value, int count)
         {
-            if (text is null)
+            if (value is null)
             {
-                throw new ArgumentNullException(nameof(text));
+                throw new ArgumentNullException(nameof(value));
             }
 
-            var sb = new StringBuilder(text.Length * count);
+            var sb = new StringBuilder(value.Length * count);
             for (int i = 0; i < count; i++)
-                sb.Append(text);
+                sb.Append(value);
             return sb.ToString();
         }
 
