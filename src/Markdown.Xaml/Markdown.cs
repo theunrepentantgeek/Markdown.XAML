@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -140,6 +141,33 @@ namespace Markdown.Xaml
         public static readonly DependencyProperty AssetPathRootProperty =
             DependencyProperty.Register("AssetPathRootRoot", typeof(string), typeof(Markdown), new PropertyMetadata(null));
 
+        public Style TableStyle
+        {
+            get { return (Style)GetValue(TableStyleProperty); }
+            set { SetValue(TableStyleProperty, value); }
+        }
+
+        public static readonly DependencyProperty TableStyleProperty =
+            DependencyProperty.Register("TableStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style TableHeaderStyle
+        {
+            get { return (Style)GetValue(TableHeaderStyleProperty); }
+            set { SetValue(TableHeaderStyleProperty, value); }
+        }
+
+        public static readonly DependencyProperty TableHeaderStyleProperty =
+            DependencyProperty.Register("TableHeaderStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style TableBodyStyle
+        {
+            get { return (Style)GetValue(TableBodyStyleProperty); }
+            set { SetValue(TableBodyStyleProperty, value); }
+        }
+
+        public static readonly DependencyProperty TableBodyStyleProperty =
+            DependencyProperty.Register("TableBodyStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
         public Markdown()
         {
             HyperlinkCommand = NavigationCommands.GoToPage;
@@ -180,7 +208,8 @@ namespace Markdown.Xaml
             return DoHeaders(text,
                 s1 => DoHorizontalRules(s1,
                     s2 => DoLists(s2,
-                    sn => FormParagraphs(sn))));
+                    s3 => DoTable(s3,
+                    sn => FormParagraphs(sn)))));
 
             //text = DoCodeBlocks(text);
             //text = DoBlockQuotes(text);
@@ -779,6 +808,162 @@ namespace Markdown.Xaml
                 // recursion for sub-lists
                 return Create<ListItem, Block>(RunBlockGamut(item));
             }
+        }
+
+        private static Regex _table = new Regex(@"
+            (                               # $1 = whole table
+                [ \r\n]*
+                (                           # $2 = table header
+                    \|([^|\r\n]*\|)+        # $3
+                )
+                [ ]*\r?\n[ ]*
+                (                           # $4 = column style
+                    \|(:?-+:?\|)+           # $5
+                )
+                (                           # $6 = table row
+                    (                       # $7
+                        [ ]*\r?\n[ ]*
+                        \|([^|\r\n]*\|)+    # $8
+                    )+
+                )
+            )",
+            RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        public IEnumerable<Block> DoTable(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text == null)
+            {
+                throw new ArgumentNullException("t  ext");
+            }
+
+            return Evaluate(text, _table, TableEvalutor, defaultHandler);
+        }
+
+        private Block TableEvalutor(Match match)
+        {
+            if (match == null)
+            {
+                throw new ArgumentNullException("match");
+            }
+
+            var wholeTable = match.Groups[1].Value;
+            var header = match.Groups[2].Value.Trim();
+            var style = match.Groups[4].Value.Trim();
+            var row = match.Groups[6].Value.Trim();
+
+            var styles = style.Substring(1, style.Length - 2).Split('|');
+            var headers = header.Substring(1, header.Length - 2).Split('|');
+            var rowList = row.Split('\n').Select(ritm =>
+            {
+                var trimRitm = ritm.Trim();
+                return trimRitm.Substring(1, trimRitm.Length - 2).Split('|');
+            }).ToList();
+
+            int maxColCount =
+                Math.Max(
+                    Math.Max(styles.Length, headers.Length),
+                    rowList.Select(ritm => ritm.Length).Max()
+                );
+
+
+            // table style
+            var aligns = new List<TextAlignment?>();
+            foreach (var colStyleTxt in styles)
+            {
+                var firstChar = colStyleTxt.First();
+                var lastChar = colStyleTxt.Last();
+                // center
+                if (firstChar == ':' && lastChar == ':')
+                {
+                    aligns.Add(TextAlignment.Center);
+                }
+                // right
+                else if (lastChar == ':')
+                {
+                    aligns.Add(TextAlignment.Right);
+                }
+                // left
+                else if (firstChar == ':')
+                {
+                    aligns.Add(TextAlignment.Left);
+                }
+                // default
+                else
+                {
+                    aligns.Add(null);
+                }
+            }
+            while (aligns.Count < maxColCount)
+            {
+                aligns.Add(null);
+            }
+
+            // table
+            var table = new Table();
+            if (TableStyle != null)
+            {
+                table.Style = TableStyle;
+            }
+
+            // table columns
+            while (table.Columns.Count < maxColCount)
+            {
+                table.Columns.Add(new TableColumn());
+            }
+
+            // table header
+            var tableHeaderRG = new TableRowGroup();
+            if (TableHeaderStyle != null)
+            {
+                tableHeaderRG.Style = TableHeaderStyle;
+            }
+
+            var tableHeader = CreateTableRow(headers, aligns);
+            tableHeaderRG.Rows.Add(tableHeader);
+            table.RowGroups.Add(tableHeaderRG);
+
+            // row
+            var tableBodyRG = new TableRowGroup();
+            if (TableBodyStyle != null)
+            {
+                tableBodyRG.Style = TableBodyStyle;
+            }
+            foreach (string[] rowAry in rowList)
+            {
+                var tableBody = CreateTableRow(rowAry, aligns);
+                tableBodyRG.Rows.Add(tableBody);
+            }
+            table.RowGroups.Add(tableBodyRG);
+
+            return table;
+        }
+
+        private TableRow CreateTableRow(string[] txts, List<TextAlignment?> aligns)
+        {
+            var tableRow = new TableRow();
+
+            foreach (var idx in Enumerable.Range(0, txts.Length))
+            {
+                var txt = txts[idx];
+                var align = aligns[idx];
+
+                var paragraph = Create<Paragraph, Inline>(RunSpanGamut(txt));
+                var cell = new TableCell(paragraph);
+
+                if (align.HasValue)
+                {
+                    cell.TextAlignment = align.Value;
+                }
+
+                tableRow.Cells.Add(cell);
+            }
+
+            while (tableRow.Cells.Count < aligns.Count)
+            {
+                tableRow.Cells.Add(new TableCell());
+            }
+
+            return tableRow;
         }
 
         private static Regex _codeSpan = new Regex(@"

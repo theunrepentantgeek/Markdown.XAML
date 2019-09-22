@@ -18,6 +18,8 @@
                         LinkStyle="{StaticResource LinkStyle}"
                         ImageStyle="{StaticResource ImageStyle}"
                         SeparatorStyle="{StaticResource SeparatorStyle}"
+                        TableStyle="{StaticResource TableStyle}"
+                        TableHeaderStyle="{StaticResource TableHeaderStyle}"
                         AssetPathRoot="{x:Static system:Environment.CurrentDirectory}"/>
 
         <local:TextToFlowDocumentConverter x:Key="TextToFlowDocumentConverter" 
