@@ -48,6 +48,16 @@ namespace Markdown.Xaml
             set { SetValue(DocumentStyleProperty, value); }
         }
 
+		public Style NormalParagraphStyle
+		{
+			get { return (Style)GetValue(NormalParagraphStyleProperty); }
+			set { SetValue(NormalParagraphStyleProperty, value); }
+		}
+
+		// Using a DependencyProperty as the backing store for NormalParagraphStyle.  This enables animation, styling, binding, etc...
+		public static readonly DependencyProperty NormalParagraphStyleProperty =
+			DependencyProperty.Register("NormalParagraphStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
         // Using a DependencyProperty as the backing store for DocumentStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DocumentStyleProperty =
             DependencyProperty.Register("DocumentStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
@@ -278,7 +288,9 @@ namespace Markdown.Xaml
 
             foreach (var g in grafs)
             {
-                yield return Create<Paragraph, Inline>(RunSpanGamut(g));
+				var block = Create<Paragraph, Inline>(RunSpanGamut(g));
+				block.Style = this.NormalParagraphStyle;
+				yield return block;
             }
         }
 
@@ -504,7 +516,11 @@ namespace Markdown.Xaml
             var result = Create<Hyperlink, Inline>(RunSpanGamut(linkText));
             result.Command = HyperlinkCommand;
             result.CommandParameter = url;
-            if (LinkStyle != null)
+			if (!string.IsNullOrWhiteSpace(title))
+			{
+				result.ToolTip = title;
+			}
+			if (LinkStyle != null)
             {
                 result.Style = LinkStyle;
             }
@@ -663,18 +679,13 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException("match");
             }
 
-            Line line = new Line();
-            if (SeparatorStyle == null)
-            {
-                line.X2 = 1;
-                line.StrokeThickness = 1.0;
-            }
-            else
-            {
-              line.Style = SeparatorStyle;
-            }
+			var separator = new Separator();
+			if (SeparatorStyle != null)
+			{
+				separator.Style = SeparatorStyle;
+			}
 
-            var container = new BlockUIContainer(line);
+			var container = new BlockUIContainer(separator);
             return container;
         }
 
@@ -1228,6 +1239,7 @@ namespace Markdown.Xaml
         }
 
         private static Regex _eoln = new Regex("\\s+");
+		private static Regex _lbrk = new Regex(@"\ {2,}\n");
 
         public IEnumerable<Inline> DoText(string text)
         {
@@ -1236,8 +1248,17 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException("text");
             }
 
-            var t = _eoln.Replace(text, " ");
-            yield return new Run(t);
+			var lines = _lbrk.Split(text);
+			bool first = true;
+			foreach (var line in lines)
+			{
+				if (first)
+					first = false;
+				else
+					yield return new LineBreak();
+				var t = _eoln.Replace(line, " ");
+				yield return new Run(t);
+			}
         }
     }
 }
