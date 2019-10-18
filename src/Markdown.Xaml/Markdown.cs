@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace Markdown.Xaml
 {
@@ -218,9 +219,12 @@ namespace Markdown.Xaml
 
             return DoHeaders(text,
                 s1 => DoHorizontalRules(s1,
-                    s2 => DoLists(s2,
-                    s3 => DoTable(s3,
-                    sn => FormParagraphs(sn)))));
+                s4 => DoHorizontalTwoLinesRules(s4,
+                s5 => DoHorizontalBoldRules(s5,
+                s6 => DoHorizontalBoldWithSingleRules(s6,
+                s2 => DoLists(s2,
+                s3 => DoTable(s3,
+                sn => FormParagraphs(sn))))))));
 
             //text = DoCodeBlocks(text);
             //text = DoBlockQuotes(text);
@@ -648,9 +652,10 @@ namespace Markdown.Xaml
             return block;
         }
 
+        #region HorizontalRules
         private static readonly Regex _horizontalRules = new Regex(@"
             ^[ ]{0,3}         # Leading space
-                ([-*_])       # $1: First marker
+                ([-])         # $1: First marker ([-*_])
                 (?>           # Repeated marker group
                     [ ]{0,2}  # Zero, one, or two spaces.
                     \1        # Marker character
@@ -663,10 +668,9 @@ namespace Markdown.Xaml
         /// Turn Markdown horizontal rules into HTML hr tags
         /// </summary>
         /// <remarks>
-        /// ***  
-        /// * * *  
         /// ---
         /// - - -
+        /// -  -  -
         /// </remarks>
         private IEnumerable<Block> DoHorizontalRules(string text, Func<string, IEnumerable<Block>> defaultHandler)
         {
@@ -685,15 +689,171 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(match));
             }
 
-            var separator = new Separator();
-            if (SeparatorStyle != null)
+            return new BlockUIContainer(new Separator()
             {
-                separator.Style = SeparatorStyle;
+                Style = SeparatorStyle
+            });
+        }
+        #endregion HorizontalRules
+
+        #region HorizontalTwoLinesRules
+        private static readonly Regex _horizontalTwoLinesRules = new Regex(@"
+            ^[ ]{0,3}         # Leading space
+                ([=])         # $1: First marker
+                (?>           # Repeated marker group
+                    [ ]{0,2}  # Zero, one, or two spaces.
+                    \1        # Marker character
+                ){2,}         # Group repeated at least twice
+                [ ]*          # Trailing spaces
+                $             # End of line.
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown horizontal rules into two HTML hr tags
+        /// </summary>
+        /// <remarks>
+        /// ===
+        /// = = =
+        /// =  =  =
+        /// </remarks>
+        private IEnumerable<Block> DoHorizontalTwoLinesRules(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
             }
 
-            var container = new BlockUIContainer(separator);
+            return Evaluate(text, _horizontalTwoLinesRules, TwoLinesRuleEvaluator, defaultHandler);
+        }
+
+        private Block TwoLinesRuleEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var stackPanel = new StackPanel();
+            for (int i = 0; i < 2; i++)
+            {
+                stackPanel.Children.Add(new Separator()
+                {
+                    Style = SeparatorStyle
+                });
+            }
+
+            var container = new BlockUIContainer(stackPanel);
             return container;
         }
+        #endregion HorizontalTwoLinesRules
+
+        #region HorizontalBoldRules
+        private static readonly Regex _horizontalBoldRules = new Regex(@"
+            ^[ ]{0,3}         # Leading space
+                ([*])         # $1: First marker
+                (?>           # Repeated marker group
+                    [ ]{0,2}  # Zero, one, or two spaces.
+                    \1        # Marker character
+                ){2,}         # Group repeated at least twice
+                [ ]*          # Trailing spaces
+                $             # End of line.
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown horizontal rules into HTML hr tags
+        /// </summary>
+        /// <remarks>
+        /// ***
+        /// * * *
+        /// *  *  *
+        /// </remarks>
+        private IEnumerable<Block> DoHorizontalBoldRules(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            return Evaluate(text, _horizontalBoldRules, BoldRuleEvaluator, defaultHandler);
+        }
+
+        private Block BoldRuleEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var stackPanel = new StackPanel();
+            for (int i = 0; i < 2; i++)
+            {
+                stackPanel.Children.Add(new Separator()
+                {
+                    Style = SeparatorStyle,
+                    Margin = new Thickness(0)
+                });
+            }
+
+            var container = new BlockUIContainer(stackPanel);
+            return container;
+        }
+        #endregion HorizontalBoldRules
+
+        #region HorizontalBoldWithSingleRules
+        private static readonly Regex _horizontalBoldWithSingleRules = new Regex(@"
+            ^[ ]{0,3}         # Leading space
+                ([_])         # $1: First marker
+                (?>           # Repeated marker group
+                    [ ]{0,2}  # Zero, one, or two spaces.
+                    \1        # Marker character
+                ){2,}         # Group repeated at least twice
+                [ ]*          # Trailing spaces
+                $             # End of line.
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown horizontal rules into HTML hr tags
+        /// </summary>
+        /// <remarks>
+        /// ***
+        /// * * *
+        /// *  *  *
+        /// </remarks>
+        private IEnumerable<Block> DoHorizontalBoldWithSingleRules(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            return Evaluate(text, _horizontalBoldWithSingleRules, BoldWithSingleRuleEvaluator, defaultHandler);
+        }
+
+        private Block BoldWithSingleRuleEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var stackPanel = new StackPanel();
+            for (int i = 0; i < 2; i++)
+            {
+                stackPanel.Children.Add(new Separator()
+                {
+                    Style = SeparatorStyle,
+                    Margin = new Thickness(0)
+                });
+            }
+            stackPanel.Children.Add(new Separator()
+            {
+                Style = SeparatorStyle
+            });
+
+            var container = new BlockUIContainer(stackPanel);
+            return container;
+        }
+        #endregion HorizontalBoldWithSingleRules
 
         private static readonly string _wholeList
             = string.Format(CultureInfo.InvariantCulture, @"
