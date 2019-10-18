@@ -15,6 +15,8 @@
                         Heading2Style="{StaticResource H2Style}"
                         Heading3Style="{StaticResource H3Style}"
                         Heading4Style="{StaticResource H4Style}"
+                        Heading5Style="{StaticResource H5Style}"
+                        Heading6Style="{StaticResource H6Style}"
                         LinkStyle="{StaticResource LinkStyle}"
                         ImageStyle="{StaticResource ImageStyle}"
                         SeparatorStyle="{StaticResource SeparatorStyle}"
@@ -41,14 +43,19 @@
                  TextWrapping="Wrap"
                  AcceptsReturn="True"
                  Margin="5" 
-                 VerticalScrollBarVisibility="Auto" FontFamily="Consolas"/>
+                 VerticalScrollBarVisibility="Auto" 
+                 FontFamily="Consolas"
+                 BorderBrush="DimGray"
+                 BorderThickness="1"/>
 
         <FlowDocumentScrollViewer Grid.Row="0"
                                   Grid.Column="1"
                                   VerticalAlignment="Stretch"
                                   HorizontalAlignment="Stretch"
                                   Margin="5"
-                                  Document="{Binding ElementName=editSource, Path=Text, Converter={StaticResource TextToFlowDocumentConverter}}" />
+                                  Document="{Binding ElementName=editSource, Path=Text, Converter={StaticResource TextToFlowDocumentConverter}}"
+                                  BorderBrush="DimGray"
+                                  BorderThickness="1"/>
 
     </Grid>
 </Window>

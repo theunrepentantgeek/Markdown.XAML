@@ -44,11 +44,16 @@ namespace Markdown.Xaml
 
         public ICommand HyperlinkCommand { get; set; }
 
+        #region Style
         public Style DocumentStyle
         {
             get { return (Style)GetValue(DocumentStyleProperty); }
             set { SetValue(DocumentStyleProperty, value); }
         }
+
+        // Using a DependencyProperty as the backing store for DocumentStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty DocumentStyleProperty =
+            DependencyProperty.Register("DocumentStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style NormalParagraphStyle
         {
@@ -59,10 +64,6 @@ namespace Markdown.Xaml
         // Using a DependencyProperty as the backing store for NormalParagraphStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NormalParagraphStyleProperty =
             DependencyProperty.Register("NormalParagraphStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
-
-        // Using a DependencyProperty as the backing store for DocumentStyle.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty DocumentStyleProperty =
-            DependencyProperty.Register("DocumentStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style Heading1Style
         {
@@ -103,6 +104,26 @@ namespace Markdown.Xaml
         // Using a DependencyProperty as the backing store for Heading4Style.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty Heading4StyleProperty =
             DependencyProperty.Register("Heading4Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style Heading5Style
+        {
+            get { return (Style)GetValue(Heading5StyleProperty); }
+            set { SetValue(Heading5StyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Heading5Style.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty Heading5StyleProperty =
+            DependencyProperty.Register("Heading5Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style Heading6Style
+        {
+            get { return (Style)GetValue(Heading6StyleProperty); }
+            set { SetValue(Heading6StyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Heading6Style.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty Heading6StyleProperty =
+            DependencyProperty.Register("Heading6Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style CodeStyle
         {
@@ -179,6 +200,7 @@ namespace Markdown.Xaml
 
         public static readonly DependencyProperty TableBodyStyleProperty =
             DependencyProperty.Register("TableBodyStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+        #endregion Style
 
         public Markdown()
         {
@@ -201,7 +223,7 @@ namespace Markdown.Xaml
             }
             else
             {
-                document.PagePadding = new Thickness(0);
+                document.PagePadding = new Thickness(10);
             }
 
             return document;
@@ -535,14 +557,15 @@ namespace Markdown.Xaml
             return result;
         }
 
+        #region Header
         private static readonly Regex _headerSetext = new Regex(@"
                 ^(.+?)
                 [ ]*
                 \n
                 (=+|-+)     # $1 = string of ='s or -'s
                 [ ]*
-                \n+",
-    RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                \n+
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
         private static readonly Regex _headerAtx = new Regex(@"
                 ^(\#{1,6})  # $1 = string of #'s
@@ -550,8 +573,8 @@ namespace Markdown.Xaml
                 (.+?)       # $2 = Header text
                 [ ]*
                 \#*         # optional closing #'s (not counted)
-                \n+",
-            RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                \n+
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
         /// <summary>
         /// Turn Markdown headers into HTML header tags
@@ -618,36 +641,28 @@ namespace Markdown.Xaml
             switch (level)
             {
                 case 1:
-                    if (Heading1Style != null)
-                    {
-                        block.Style = Heading1Style;
-                    }
+                    block.Style = Heading1Style;
                     break;
-
                 case 2:
-                    if (Heading2Style != null)
-                    {
-                        block.Style = Heading2Style;
-                    }
+                    block.Style = Heading2Style;
                     break;
-
                 case 3:
-                    if (Heading3Style != null)
-                    {
-                        block.Style = Heading3Style;
-                    }
+                    block.Style = Heading3Style;
                     break;
-
                 case 4:
-                    if (Heading4Style != null)
-                    {
-                        block.Style = Heading4Style;
-                    }
+                    block.Style = Heading4Style;
+                    break;
+                case 5:
+                    block.Style = Heading5Style;
+                    break;
+                case 6:
+                    block.Style = Heading6Style;
                     break;
             }
 
             return block;
         }
+        #endregion Header
 
         #region Horizontal Rules
         private static readonly Regex _horizontalRules = HorizontalRulesRegex("-");
@@ -731,8 +746,7 @@ namespace Markdown.Xaml
                 });
             }
 
-            var container = new BlockUIContainer(stackPanel);
-            return container;
+            return new BlockUIContainer(stackPanel);
         }
 
         /// <summary>
@@ -755,8 +769,7 @@ namespace Markdown.Xaml
                 });
             }
 
-            var container = new BlockUIContainer(stackPanel);
-            return container;
+            return new BlockUIContainer(stackPanel);
         }
 
         /// <summary>
@@ -783,8 +796,7 @@ namespace Markdown.Xaml
                 Style = SeparatorStyle
             });
 
-            var container = new BlockUIContainer(stackPanel);
-            return container;
+            return new BlockUIContainer(stackPanel);
         }
         #endregion Horizontal Rules
 
