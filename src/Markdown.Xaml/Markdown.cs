@@ -30,11 +30,6 @@ namespace Markdown.Xaml
         /// </summary>
         private const int _tabWidth = 4;
 
-        private const string _markerUL = @"[*+-]";
-        private const string _markerOL = @"\d+[.]";
-
-        private int _listLevel;
-
         /// <summary>
         /// when true, bold and italic require non-word characters on either side  
         /// WARNING: this is a significant deviation from the markdown spec
@@ -676,7 +671,7 @@ namespace Markdown.Xaml
         /// <param name="markers">String of markers (e.g.: - or -*_).</param>
         /// <returns>Regex expression.</returns>
         /// <remarks>
-        /// e.g.:
+        /// e.g.
         /// ---
         /// - - -
         /// -  -  -
@@ -800,6 +795,29 @@ namespace Markdown.Xaml
         }
         #endregion Horizontal Rules
 
+        #region List
+        private const string _markerUL = @"[*+=-]";
+        private const string _markerOL = @"\d+[.]|\p{L}+[.]";
+
+        // Unordered List
+        private const string _markerUL_Disc = @"[*]";
+        private const string _markerUL_Box = @"[+]";
+        private const string _markerUL_Circle = @"[-]";
+        private const string _markerUL_Square = @"[=]";
+
+        // Ordered List
+        private const string _markerOL_Number = @"\d+[.]";
+        private const string _markerOL_LetterLower = @"\p{Ll}+[.]";
+        private const string _markerOL_LetterUpper = @"\p{Lu}+[.]";
+
+        private int _listLevel;
+
+        /// <summary>
+        /// Maximum number of levels a single list can have.
+        /// In other words, _listDepth - 1 is the maximum number of nested lists.
+        /// </summary>
+        private const int _listDepth = 6;
+
         private static readonly string _wholeList
             = string.Format(CultureInfo.InvariantCulture, @"
             (                               # $1 = whole list
@@ -819,7 +837,7 @@ namespace Markdown.Xaml
                     {0}[ ]+
                   )
               )
-            )", string.Format(CultureInfo.InvariantCulture, "(?:{0}|{1})", _markerUL, _markerOL), _tabWidth - 1);
+            )", string.Format(CultureInfo.InvariantCulture, "(?:{0}|{1})", _markerUL, _markerOL), _listDepth - 1);
 
         private static readonly Regex _listNested = new Regex(@"^" + _wholeList,
             RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
@@ -855,13 +873,16 @@ namespace Markdown.Xaml
             string list = match.Groups[1].Value;
             string listType = Regex.IsMatch(match.Groups[3].Value, _markerUL) ? "ul" : "ol";
 
+            // Set text marker style.
+            TextMarkerStyle textMarker = GetTextMarkerStyle(listType, match);
+
             // Turn double returns into triple returns, so that we can make a
             // paragraph for the last item in a list, if necessary:
             list = Regex.Replace(list, @"\n{2,}", "\n\n\n");
 
             var resultList = Create<List, ListItem>(ProcessListItems(list, listType == "ul" ? _markerUL : _markerOL));
 
-            resultList.MarkerStyle = listType == "ul" ? TextMarkerStyle.Disc : TextMarkerStyle.Decimal;
+            resultList.MarkerStyle = textMarker;
 
             return resultList;
         }
@@ -900,7 +921,7 @@ namespace Markdown.Xaml
                 list = Regex.Replace(list, @"\n{2,}\z", "\n");
 
                 string pattern = string.Format(CultureInfo.InvariantCulture,
-                  @"(\n)?                      # leading line = $1
+                  @"(\n)?                  # leading line = $1
                 (^[ ]*)                    # leading whitespace = $2
                 ({0}) [ ]+                 # list marker = $3
                 ((?s:.+?)                  # list item text = $4
@@ -939,6 +960,51 @@ namespace Markdown.Xaml
                 return Create<ListItem, Block>(RunBlockGamut(item));
             }
         }
+
+        /// <summary>
+        /// Get the text marker style based on a specific regex.
+        /// </summary>
+        /// <param name="listType">Specify what kind of list: ul, ol.</param>
+        private static TextMarkerStyle GetTextMarkerStyle(string listType, Match match)
+        {
+            switch (listType)
+            {
+                case "ul":
+                    if (Regex.IsMatch(match.Groups[3].Value, _markerUL_Disc))
+                    {
+                        return TextMarkerStyle.Disc;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerUL_Box))
+                    {
+                        return TextMarkerStyle.Box;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerUL_Circle))
+                    {
+                        return TextMarkerStyle.Circle;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerUL_Square))
+                    {
+                        return TextMarkerStyle.Square;
+                    }
+                    break;
+                case "ol":
+                    if (Regex.IsMatch(match.Groups[3].Value, _markerOL_Number))
+                    {
+                        return TextMarkerStyle.Decimal;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_LetterLower))
+                    {
+                        return TextMarkerStyle.LowerLatin;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_LetterUpper))
+                    {
+                        return TextMarkerStyle.UpperLatin;
+                    }
+                    break;
+            }
+            return TextMarkerStyle.None;
+        }
+        #endregion List
 
         private static readonly Regex _table = new Regex(@"
             (                               # $1 = whole table
