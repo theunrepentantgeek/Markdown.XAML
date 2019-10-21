@@ -40,6 +40,11 @@
     </Style>
     <!-- END Heading Style -->
 
+    <!-- Separator Style -->
+    <Style x:Key="SeparatorStyle" TargetType="Separator">
+    </Style>
+    <!-- END Separator Style -->
+
     <Style x:Key="LinkStyle"
                TargetType="Hyperlink">
             <Setter Property="TextDecorations"
@@ -57,16 +62,6 @@
                           Value="20,0,0,0" />
               </Trigger>
           </Style.Triggers>
-      </Style>
-
-      <Style x:Key="SeparatorStyle"
-             TargetType="Separator">
-          <!--<Setter Property="X2"
-                  Value="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=FlowDocumentScrollViewer}}" />
-          <Setter Property="Stroke"
-                  Value="#99000000" />
-          <Setter Property="StrokeThickness"
-                  Value="2" />-->
       </Style>
 
       <!-- 
