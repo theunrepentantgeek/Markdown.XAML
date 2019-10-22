@@ -77,11 +77,17 @@
     </Style>
     <!-- END Table Style -->
 
-    <Style x:Key="LinkStyle"
-               TargetType="Hyperlink">
-            <Setter Property="TextDecorations"
-                    Value="None" />
-        </Style>
+    <!-- Link Style -->
+    <Style x:Key="LinkStyle" TargetType="Hyperlink">
+        <Setter Property="TextDecorations" Value="None" />
+        <Style.Triggers>
+            <Trigger  Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="OrangeRed" />
+                <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <!-- END Link Style -->
 
         <Style x:Key="ImageStyle"
                TargetType="Image">

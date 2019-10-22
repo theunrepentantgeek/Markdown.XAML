@@ -416,26 +416,6 @@ namespace Markdown.Xaml
             GetNestedParensPatternWithWhiteSpace()),
                   RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
-        private static readonly Regex _anchorInline = new Regex(
-            string.Format(CultureInfo.InvariantCulture, @"
-                (                           # wrap whole match in $1
-                    \[
-                        ({0})               # link text = $2
-                    \]
-                    \(                      # literal paren
-                        [ ]*
-                        ({1})               # href = $3
-                        [ ]*
-                        (                   # $4
-                        (['""])           # quote char = $5
-                        (.*?)               # title = $6
-                        \5                  # matching quote
-                        [ ]*                # ignore any spaces between closing quote and )
-                        )?                  # title is optional
-                    \)
-                )", GetNestedBracketsPattern(), GetNestedParensPattern()),
-                  RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
-
         /// <summary>
         /// Turn Markdown images into images
         /// </summary>
@@ -518,6 +498,27 @@ namespace Markdown.Xaml
             return new InlineUIContainer(image);
         }
 
+        #region HyperLink
+        private static readonly Regex _anchorInline = new Regex(
+            string.Format(CultureInfo.InvariantCulture, @"
+                (                           # wrap whole match in $1
+                    \[
+                        ({0})               # link text = $2
+                    \]
+                    \(                      # literal paren
+                        [ ]*
+                        ({1})               # href = $3
+                        [ ]*
+                        (                   # $4
+                        (['""])             # quote char = $5
+                        (.*?)               # title = $6
+                        \5                  # matching quote
+                        [ ]*                # ignore any spaces between closing quote and )
+                        )?                  # title is optional
+                    \)
+                )", GetNestedBracketsPattern(), GetNestedParensPattern()),
+                  RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
         /// <summary>
         /// Turn Markdown link shortcuts into hyperlinks
         /// </summary>
@@ -531,7 +532,7 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(text));
             }
 
-            // Next, inline-style links: [link text](url "optional title") or [link text](url "optional title")
+            // Next, inline-style links: [link text](url "optional title")
             return Evaluate(text, _anchorInline, AnchorInlineEvaluator, defaultHandler);
         }
 
@@ -553,13 +554,11 @@ namespace Markdown.Xaml
             {
                 result.ToolTip = title;
             }
-            if (LinkStyle != null)
-            {
-                result.Style = LinkStyle;
-            }
+            result.Style = LinkStyle;
 
             return result;
         }
+        #endregion HyperLink
 
         #region Header
         private static readonly Regex _headerSetext = new Regex(@"
