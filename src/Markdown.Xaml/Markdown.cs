@@ -195,6 +195,15 @@ namespace Markdown.Xaml
 
         public static readonly DependencyProperty TableBodyStyleProperty =
             DependencyProperty.Register("TableBodyStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style TableRowAltStyle
+        {
+            get { return (Style)GetValue(TableRowAltStyleProperty); }
+            set { SetValue(TableRowAltStyleProperty, value); }
+        }
+
+        public static readonly DependencyProperty TableRowAltStyleProperty =
+            DependencyProperty.Register("TableRowAltStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
         #endregion Style
 
         public Markdown()
@@ -1006,6 +1015,7 @@ namespace Markdown.Xaml
         }
         #endregion List
 
+        #region Table
         private static readonly Regex _table = new Regex(@"
             (                               # $1 = whole table
                 [ \r\n]*
@@ -1014,7 +1024,7 @@ namespace Markdown.Xaml
                 )
                 [ ]*\r?\n[ ]*
                 (                           # $4 = column style
-                    \|(:?-+:?\|)+           # $5
+                    =?\|(:?-+:?\|)+         # $5
                 )
                 (                           # $6 = table row
                     (                       # $7
@@ -1046,8 +1056,9 @@ namespace Markdown.Xaml
             var header = match.Groups[2].Value.Trim();
             var style = match.Groups[4].Value.Trim();
             var row = match.Groups[6].Value.Trim();
+            var rowAlt = style.Substring(0, 1) == "=" ? true : false;
 
-            var styles = style.Substring(1, style.Length - 2).Split('|');
+            var styles = style.Substring(1 + Convert.ToInt32(rowAlt), style.Length - (2 + Convert.ToInt32(rowAlt))).Split('|');
             var headers = header.Substring(1, header.Length - 2).Split('|');
             var rowList = row.Split('\n').Select(ritm =>
             {
@@ -1060,7 +1071,6 @@ namespace Markdown.Xaml
                     Math.Max(styles.Length, headers.Length),
                     rowList.Select(ritm => ritm.Length).Max()
                 );
-
 
             // table style
             var aligns = new List<TextAlignment?>();
@@ -1095,11 +1105,10 @@ namespace Markdown.Xaml
             }
 
             // table
-            var table = new Table();
-            if (TableStyle != null)
+            var table = new Table()
             {
-                table.Style = TableStyle;
-            }
+                Style = TableStyle
+            };
 
             // table columns
             while (table.Columns.Count < maxColCount)
@@ -1108,25 +1117,23 @@ namespace Markdown.Xaml
             }
 
             // table header
-            var tableHeaderRG = new TableRowGroup();
-            if (TableHeaderStyle != null)
+            var tableHeaderRG = new TableRowGroup()
             {
-                tableHeaderRG.Style = TableHeaderStyle;
-            }
+                Style = TableHeaderStyle
+            };
 
             var tableHeader = CreateTableRow(headers, aligns);
             tableHeaderRG.Rows.Add(tableHeader);
             table.RowGroups.Add(tableHeaderRG);
 
             // row
-            var tableBodyRG = new TableRowGroup();
-            if (TableBodyStyle != null)
+            var tableBodyRG = new TableRowGroup()
             {
-                tableBodyRG.Style = TableBodyStyle;
-            }
+                Style = TableBodyStyle
+            };
             foreach (string[] rowAry in rowList)
             {
-                var tableBody = CreateTableRow(rowAry, aligns);
+                var tableBody = CreateTableRow(rowAry, aligns, rowAlt && (rowList.IndexOf(rowAry) % 2) == 1 );
                 tableBodyRG.Rows.Add(tableBody);
             }
             table.RowGroups.Add(tableBodyRG);
@@ -1134,9 +1141,12 @@ namespace Markdown.Xaml
             return table;
         }
 
-        private TableRow CreateTableRow(string[] txts, List<TextAlignment?> aligns)
+        private TableRow CreateTableRow(string[] txts, List<TextAlignment?> aligns, bool isOddRow = false)
         {
-            var tableRow = new TableRow();
+            var tableRow = new TableRow()
+            {
+                Style = isOddRow ? TableRowAltStyle : null
+            };
 
             foreach (var idx in Enumerable.Range(0, txts.Length))
             {
@@ -1161,6 +1171,7 @@ namespace Markdown.Xaml
 
             return tableRow;
         }
+        #endregion Table
 
         private static readonly Regex _codeSpan = new Regex(@"
                     (?<!\\)   # Character before opening ` can't be a backslash
