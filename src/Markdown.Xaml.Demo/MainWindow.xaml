@@ -19,6 +19,8 @@
                         Heading6Style="{StaticResource H6Style}"
                         LinkStyle="{StaticResource LinkStyle}"
                         ImageStyle="{StaticResource ImageStyle}"
+                        ImageFailedStyle="{StaticResource ImageFailedStyle}"
+                        ImageDownloadFailedStyle="{StaticResource ImageDownloadFailedStyle}"
                         SeparatorStyle="{StaticResource SeparatorStyle}"
                         TableStyle="{StaticResource TableStyle}"
                         TableHeaderStyle="{StaticResource TableHeaderStyle}"

@@ -89,17 +89,23 @@
     </Style>
     <!-- END Link Style -->
 
-        <Style x:Key="ImageStyle"
-               TargetType="Image">
-          <Setter Property="RenderOptions.BitmapScalingMode"
-                  Value="NearestNeighbor" />
-          <Style.Triggers>
-              <Trigger Property="Tag"
-                       Value="imageright">
-                  <Setter Property="Margin" 
-                          Value="20,0,0,0" />
-              </Trigger>
-          </Style.Triggers>
-      </Style>
+    <!-- Image Style -->
+    <Style x:Key="ImageStyle" TargetType="Image">
+        <Setter Property="RenderOptions.BitmapScalingMode" Value="NearestNeighbor" />
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="right">
+                <Setter Property="Margin" Value="20,0,0,0" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ImageFailedStyle" TargetType="Image">
+        <Setter Property="Margin" Value="10" />
+    </Style>
+
+    <Style x:Key="ImageDownloadFailedStyle" TargetType="Run">
+        <Setter Property="Foreground" Value="OrangeRed" />
+    </Style>
+    <!-- END Image Style -->
 
 </ResourceDictionary>

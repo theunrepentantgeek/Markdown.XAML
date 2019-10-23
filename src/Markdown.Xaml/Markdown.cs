@@ -36,9 +36,7 @@ namespace Markdown.Xaml
         /// </summary>
         /// 
         public bool StrictBoldItalic { get; set; }
-
-        public ICommand HyperlinkCommand { get; set; }
-
+        
         #region Style
         public Style DocumentStyle
         {
@@ -150,6 +148,26 @@ namespace Markdown.Xaml
         public static readonly DependencyProperty ImageStyleProperty =
             DependencyProperty.Register("ImageStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
+        public Style ImageFailedStyle
+        {
+            get { return (Style)GetValue(ImageFailedStyleProperty); }
+            set { SetValue(ImageFailedStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ImageFailedStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ImageFailedStyleProperty =
+            DependencyProperty.Register("ImageFailedStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style ImageDownloadFailedStyle
+        {
+            get { return (Style)GetValue(ImageDownloadFailedStyleProperty); }
+            set { SetValue(ImageDownloadFailedStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ImageDownloadFailedStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ImageDownloadFailedStyleProperty =
+            DependencyProperty.Register("ImageDownloadFailedStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
         public Style SeparatorStyle
         {
             get { return (Style)GetValue(SeparatorStyleProperty); }
@@ -166,8 +184,9 @@ namespace Markdown.Xaml
             set { SetValue(AssetPathRootProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for AssetPathRoot.
         public static readonly DependencyProperty AssetPathRootProperty =
-            DependencyProperty.Register("AssetPathRootRoot", typeof(string), typeof(Markdown), new PropertyMetadata(null));
+            DependencyProperty.Register("AssetPathRoot", typeof(string), typeof(Markdown), new PropertyMetadata(null));
 
         public Style TableStyle
         {
@@ -175,6 +194,7 @@ namespace Markdown.Xaml
             set { SetValue(TableStyleProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for TableStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TableStyleProperty =
             DependencyProperty.Register("TableStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
@@ -184,6 +204,7 @@ namespace Markdown.Xaml
             set { SetValue(TableHeaderStyleProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for TableHeaderStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TableHeaderStyleProperty =
             DependencyProperty.Register("TableHeaderStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
@@ -193,6 +214,7 @@ namespace Markdown.Xaml
             set { SetValue(TableBodyStyleProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for TableBodyStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TableBodyStyleProperty =
             DependencyProperty.Register("TableBodyStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
@@ -201,6 +223,7 @@ namespace Markdown.Xaml
             get { return (Style)GetValue(TableRowAltStyleProperty); }
             set { SetValue(TableRowAltStyleProperty, value); }
         }
+        // Using a DependencyProperty as the backing store for TableRowAltStyle.  This enables animation, styling, binding, etc...
 
         public static readonly DependencyProperty TableRowAltStyleProperty =
             DependencyProperty.Register("TableRowAltStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
@@ -384,7 +407,7 @@ namespace Markdown.Xaml
                 _nestedParensPatternWithWhiteSpace =
                     RepeatString(@"
                     (?>              # Atomic matching
-                       [^()]+      # Anything other than parens
+                       [^()]+        # Anything other than parens
                      |
                        \(
                            ", _nestDepth) + RepeatString(
@@ -394,6 +417,7 @@ namespace Markdown.Xaml
             return _nestedParensPatternWithWhiteSpace;
         }
 
+        #region Image
         private static readonly Regex _imageInline = new Regex(
             string.Format(CultureInfo.InvariantCulture, @"
                 (                           # wrap whole match in $1
@@ -405,22 +429,20 @@ namespace Markdown.Xaml
                         ({1})               # href = $3
                         [ ]*
                         (                   # $4
-                        (['""])           # quote char = $5
-                        (.*?)               # title = $6
+                        (['""])             # quote char = $5
+                        (.*?)               # tag = $6
                         \5                  # matching quote
-                        #[ ]*                # ignore any spaces between closing quote and )
-                        )?                  # title is optional
+                        [ ]*                # ignore any spaces between closing quote and )
+                        )?                  # tag is optional
                     \)
-                )",
-            GetNestedBracketsPattern(),
-            GetNestedParensPatternWithWhiteSpace()),
+                )", GetNestedBracketsPattern(), GetNestedParensPattern()),
                   RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
         /// <summary>
         /// Turn Markdown images into images
         /// </summary>
         /// <remarks>
-        /// ![image alt](url) 
+        /// ![image alt](url "tag") 
         /// </remarks>
         private IEnumerable<Inline> DoImages(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
@@ -439,8 +461,10 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(match));
             }
 
-            string linkText = match.Groups[2].Value;
+            string imageAlt = match.Groups[2].Value;
             string url = match.Groups[3].Value;
+            string tag = match.Groups[6].Value;
+
             BitmapImage imgSource = null;
             try
             {
@@ -449,21 +473,28 @@ namespace Markdown.Xaml
                     url = System.IO.Path.Combine(AssetPathRoot ?? string.Empty, url);
                 }
 
-                imgSource = new BitmapImage();
-                imgSource.BeginInit();
-                imgSource.CacheOption = BitmapCacheOption.None;
-                imgSource.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-                imgSource.CacheOption = BitmapCacheOption.OnLoad;
-                imgSource.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                imgSource.UriSource = new Uri(url);
-                imgSource.EndInit();
+                imgSource = CreateBitmapImage(url);
             }
             catch (Exception)
             {
-                return new Run("!" + url) { Foreground = Brushes.Red };
+                //return new Run("!" + (!string.IsNullOrEmpty(imageAlt) ? imageAlt : url)) { Style = ImageDownloadFailedStyle };                
+
+                imgSource = CreateBitmapImage();
+                Image img = new Image()
+                {
+                    Source = imgSource,
+                    Width = imgSource.Width,
+                    ToolTip = ToolTipForImageFailed(imageAlt, url),
+                    Style = ImageFailedStyle
+                };
+                return new InlineUIContainer(img);
             }
 
-            Image image = new Image { Source = imgSource, Tag = linkText };
+            Image image = new Image { Source = imgSource, Tag = tag };
+            if (!string.IsNullOrWhiteSpace(imageAlt))
+            {
+                image.ToolTip = imageAlt;
+            }
             if (ImageStyle is null)
             {
                 image.Margin = new Thickness(0);
@@ -485,10 +516,24 @@ namespace Markdown.Xaml
                 void downloadCompletedHandler(object sender, EventArgs e)
                 {
                     imgSource.DownloadCompleted -= downloadCompletedHandler;
+                    imgSource.DownloadFailed -= downloadFailedHandler;
                     bindingExpression.UpdateTarget();
                 }
 
+                void downloadFailedHandler(object sender, EventArgs e)
+                {
+                    imgSource.DownloadCompleted -= downloadCompletedHandler;
+                    imgSource.DownloadFailed -= downloadFailedHandler;
+                    // default image when download failed
+                    imgSource = CreateBitmapImage();
+                    image.Source = imgSource;
+                    image.Width = imgSource.Width;
+                    image.ToolTip = ToolTipForImageFailed(imageAlt, url);
+                    image.Style = ImageFailedStyle;
+                }
+
                 imgSource.DownloadCompleted += downloadCompletedHandler;
+                imgSource.DownloadFailed += downloadFailedHandler;
             }
             else
             {
@@ -498,7 +543,48 @@ namespace Markdown.Xaml
             return new InlineUIContainer(image);
         }
 
+        /// <summary>
+        /// Return a BitmapImage to add it as a source to the Image.
+        /// </summary>
+        /// <param name="url">Url of the image to load.</param>
+        private BitmapImage CreateBitmapImage(string url = null)
+        {
+            BitmapImage imgSource = new BitmapImage();
+            imgSource.BeginInit();
+            imgSource.CacheOption = BitmapCacheOption.None;
+            imgSource.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+            imgSource.CacheOption = BitmapCacheOption.OnLoad;
+            imgSource.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            imgSource.UriSource = !string.IsNullOrEmpty(url) ? new Uri(url)
+                                                             : new Uri(System.IO.Path.Combine(AssetPathRoot ?? string.Empty, "imgfailed.png"));
+            imgSource.EndInit();
+            return imgSource;
+        }
+
+        /// <summary>
+        /// Create a ToolTip to set on the image when it fails to load.
+        /// </summary>
+        /// <param name="imageAlt">Image alternative text.</param>
+        /// <param name="url">File location.</param>
+        private static StackPanel ToolTipForImageFailed(string imageAlt, string url)
+        {
+            var stackPanel = new StackPanel();
+            stackPanel.Children.Add(new TextBlock()
+            {
+                Text = imageAlt
+            });
+            stackPanel.Children.Add(new TextBlock()
+            {
+                Text = url
+            });
+
+            return stackPanel;
+        }
+        #endregion Image
+
         #region HyperLink
+        public ICommand HyperlinkCommand { get; set; }
+
         private static readonly Regex _anchorInline = new Regex(
             string.Format(CultureInfo.InvariantCulture, @"
                 (                           # wrap whole match in $1
