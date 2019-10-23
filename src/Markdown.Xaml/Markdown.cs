@@ -300,11 +300,12 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(text));
             }
 
-            return DoCodeSpan(text,
-                s0 => DoImages(s0,
-                s1 => DoAnchors(s1,
-                s2 => DoItalicsAndBold(s2,
-                s3 => DoText(s3)))));
+            return DoColor(text,
+                s1 => DoCodeSpan(s1,
+                s2 => DoImages(s2,
+                s3 => DoAnchors(s3,
+                s4 => DoItalicsAndBold(s4,
+                sn => DoText(sn))))));
 
             //text = EscapeSpecialCharsWithinTagAttributes(text);
             //text = EscapeBackslashes(text);
@@ -1425,6 +1426,71 @@ namespace Markdown.Xaml
             return Create<Bold, Inline>(RunSpanGamut(content));
         }
         #endregion Italic and Bold
+
+        #region Color
+        private static readonly Regex _color = new Regex(
+            string.Format(CultureInfo.InvariantCulture, @"
+                (                           # wrap whole match in $1
+                    color\/\[
+                        ({0})               # color brush name = $2
+                    \]
+                    \(                      # literal paren
+                        [ ]*
+                        ({1})               # text = $3
+                        [ ]*
+                    \)
+                )", GetNestedBracketsPattern(), GetNestedParensPatternWithWhiteSpace()),
+                  RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Color spans.
+        /// </summary>
+        /// <remarks>
+        /// color/[ColorBrushName or HexColor](text to color) 
+        /// ColorBrushName is not case sensitive
+        /// HexColor e.g. #29F, #FFFFFF, #88000000
+        /// </remarks>
+        private IEnumerable<Inline> DoColor(string text, Func<string, IEnumerable<Inline>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+            return Evaluate(text, _color, ColorEvaluator, defaultHandler);
+        }
+
+        private Inline ColorEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            string text = match.Groups[3].Value;
+            text = Regex.Replace(text, @"^[ ]*", ""); // leading whitespace
+            text = Regex.Replace(text, @"[ ]*$", ""); // trailing whitespace
+
+            var span = Create<Span, Inline>(RunSpanGamut(text));
+
+            try
+            {
+                if (new Regex(@"^\#").IsMatch(match.Groups[2].Value))
+                {
+                    span.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom(match.Groups[2].Value));
+                }
+                else
+                {
+                    span.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString(match.Groups[2].Value);
+                }
+            }
+            catch
+            {
+                span.Foreground = Brushes.Black;
+            }
+
+            return span;
+        }
+        #endregion Color
 
         private static readonly Regex _outDent = new Regex(@"^[ ]{1," + _tabWidth + @"}", RegexOptions.Multiline | RegexOptions.Compiled);
 
