@@ -11,6 +11,8 @@
 
         <local:Markdown x:Key="Markdown"
                         DocumentStyle="{StaticResource DocumentStyle}"
+                        CodeBlockStyle="{StaticResource CodeBlockStyle}"
+                        CodeSpanStyle="{StaticResource CodeSpanStyle}"
                         Heading1Style="{StaticResource H1Style}"
                         Heading2Style="{StaticResource H2Style}"
                         Heading3Style="{StaticResource H3Style}"

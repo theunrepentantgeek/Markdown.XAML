@@ -107,5 +107,18 @@
         <Setter Property="Foreground" Value="OrangeRed" />
     </Style>
     <!-- END Image Style -->
+    
+    <!-- Code Style -->
+    <Style x:Key="CodeBlockStyle" TargetType="Paragraph">
+        <Setter Property="FontFamily" Value="Courier New" />
+        <Setter Property="Background" Value="Wheat" />
+        <Setter Property="Padding" Value="10" />
+    </Style>
+    
+    <Style x:Key="CodeSpanStyle" TargetType="Run">
+        <Setter Property="FontFamily" Value="Courier New" />
+        <Setter Property="Background" Value="Khaki" />
+    </Style>
+    <!-- END Code Style -->
 
 </ResourceDictionary>

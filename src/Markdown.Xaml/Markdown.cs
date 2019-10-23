@@ -29,13 +29,6 @@ namespace Markdown.Xaml
         /// this constant determines how "wide" those tabs become in spaces  
         /// </summary>
         private const int _tabWidth = 4;
-
-        /// <summary>
-        /// when true, bold and italic require non-word characters on either side  
-        /// WARNING: this is a significant deviation from the markdown spec
-        /// </summary>
-        /// 
-        public bool StrictBoldItalic { get; set; }
         
         #region Style
         public Style DocumentStyle
@@ -118,15 +111,25 @@ namespace Markdown.Xaml
         public static readonly DependencyProperty Heading6StyleProperty =
             DependencyProperty.Register("Heading6Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
-        public Style CodeStyle
+        public Style CodeBlockStyle
         {
-            get { return (Style)GetValue(CodeStyleProperty); }
-            set { SetValue(CodeStyleProperty, value); }
+            get { return (Style)GetValue(CodeBlockStyleProperty); }
+            set { SetValue(CodeBlockStyleProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for CodeStyle.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty CodeStyleProperty =
-            DependencyProperty.Register("CodeStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+        // Using a DependencyProperty as the backing store for CodeBlockStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CodeBlockStyleProperty =
+            DependencyProperty.Register("CodeBlockStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style CodeSpanStyle
+        {
+            get { return (Style)GetValue(CodeSpanStyleProperty); }
+            set { SetValue(CodeSpanStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CodeSpanStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CodeSpanStyleProperty =
+            DependencyProperty.Register("CodeSpanStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style LinkStyle
         {
@@ -270,7 +273,8 @@ namespace Markdown.Xaml
                 s1 => DoHorizontalRules(s1,
                 s2 => DoLists(s2,
                 s3 => DoTable(s3,
-                sn => FormParagraphs(sn)))));
+                s4 => DoCodeBlock(s4,
+                sn => FormParagraphs(sn))))));
 
             //text = DoCodeBlocks(text);
             //text = DoBlockQuotes(text);
@@ -296,7 +300,7 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(text));
             }
 
-            return DoCodeSpans(text,
+            return DoCodeSpan(text,
                 s0 => DoImages(s0,
                 s1 => DoAnchors(s1,
                 s2 => DoItalicsAndBold(s2,
@@ -1258,18 +1262,55 @@ namespace Markdown.Xaml
         }
         #endregion Table
 
+        #region CodeBlock
+        private static readonly Regex _codeBlock = new Regex(@"
+                \n
+                («)     # $1 = starting marker «
+                (.+?)   # $2 = Code text
+                »       # closing marker »
+                \n+
+            ", RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown « code block » into HTML code tags
+        /// </summary>
+        private IEnumerable<Block> DoCodeBlock(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            return Evaluate(text, _codeBlock, CodeBlockEvaluator, defaultHandler);
+        }
+
+        private Block CodeBlockEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+           var block = Create<Paragraph, Inline>(RunSpanGamut(match.Groups[2].Value));
+            block.Style = CodeBlockStyle;
+            return block;
+        }
+        #endregion CodeBlock
+
+        #region CodeSpan
         private static readonly Regex _codeSpan = new Regex(@"
-                    (?<!\\)   # Character before opening ` can't be a backslash
-                    (`+)      # $1 = Opening run of `
-                    (.+?)     # $2 = The code block
-                    (?<!`)
-                    \1
-                    (?!`)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
+                (?<!\\)   # Character before opening ` can't be a backslash
+                (`+)      # $1 = Opening run of `
+                (.+?)     # $2 = The code block
+                (?<!`)
+                \1
+                (?!`)
+            ", RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
 
         /// <summary>
         /// Turn Markdown `code spans` into HTML code tags
         /// </summary>
-        private IEnumerable<Inline> DoCodeSpans(string text, Func<string, IEnumerable<Inline>> defaultHandler)
+        private IEnumerable<Inline> DoCodeSpan(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
             if (text is null)
             {
@@ -1312,14 +1353,20 @@ namespace Markdown.Xaml
             span = Regex.Replace(span, @"^[ ]*", ""); // leading whitespace
             span = Regex.Replace(span, @"[ ]*$", ""); // trailing whitespace
 
-            var result = new Run(span);
-            if (CodeStyle != null)
+            return new Run(span) 
             {
-                result.Style = CodeStyle;
-            }
-
-            return result;
+                Style = CodeSpanStyle
+            };
         }
+        #endregion CodeSpan
+
+        #region Italic and Bold
+        /// <summary>
+        /// when true, bold and italic require non-word characters on either side  
+        /// WARNING: this is a significant deviation from the markdown spec
+        /// </summary>
+        /// 
+        public bool StrictBoldItalic { get; set; }
 
         private static readonly Regex _bold = new Regex(@"(\*\*|__) (?=\S) (.+?[*_]*) (?<=\S) \1",
             RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
@@ -1377,6 +1424,7 @@ namespace Markdown.Xaml
             var content = match.Groups[contentGroup].Value;
             return Create<Bold, Inline>(RunSpanGamut(content));
         }
+        #endregion Italic and Bold
 
         private static readonly Regex _outDent = new Regex(@"^[ ]{1," + _tabWidth + @"}", RegexOptions.Multiline | RegexOptions.Compiled);
 
