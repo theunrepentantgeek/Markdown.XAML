@@ -29,6 +29,11 @@ namespace Markdown.Xaml
         /// this constant determines how "wide" those tabs become in spaces  
         /// </summary>
         private const int _tabWidth = 4;
+
+        /// <summary>
+        /// Default text alignment, equal to the one defined at document level.
+        /// </summary>
+        private static TextAlignment defaultTextAlignment = TextAlignment.Left;
         
         #region Style
         public Style DocumentStyle
@@ -245,6 +250,11 @@ namespace Markdown.Xaml
             }
 
             text = Normalize(text);
+
+            defaultTextAlignment = GetTextAlignment(text);
+
+            text = Regex.Replace(text, _alignment, "");
+
             var document = Create<FlowDocument, Block>(RunBlockGamut(text));
 
             if (DocumentStyle != null)
@@ -255,6 +265,7 @@ namespace Markdown.Xaml
             {
                 document.PagePadding = new Thickness(10);
             }
+            document.TextAlignment = defaultTextAlignment;
 
             return document;
         }
@@ -328,6 +339,7 @@ namespace Markdown.Xaml
         private static readonly Regex _newlinesLeadingTrailing = new Regex(@"^\n+|\n+\z", RegexOptions.Compiled);
         private static readonly Regex _newlinesMultiple = new Regex(@"\n{2,}", RegexOptions.Compiled);
         private static readonly Regex _leadingWhitespace = new Regex(@"^[ ]*", RegexOptions.Compiled);
+        private const string _alignment = @"^\|-\||^\|:-\||^\|-:\||^\|:-:\||^\|=\|";
 
         /// <summary>
         /// splits on two or more newlines, to form "paragraphs";    
@@ -344,8 +356,10 @@ namespace Markdown.Xaml
 
             foreach (var g in grafs)
             {
-                var block = Create<Paragraph, Inline>(RunSpanGamut(g));
-                block.Style = this.NormalParagraphStyle;
+                var textAlignment = GetTextAlignment(text);
+                var block = Create<Paragraph, Inline>(RunSpanGamut(Regex.Replace(g, _alignment, "")));
+                block.Style = NormalParagraphStyle;
+                block.TextAlignment = textAlignment;
                 yield return block;
             }
         }
@@ -684,7 +698,7 @@ namespace Markdown.Xaml
         /// ## Header 2  
         /// ## Header 2 with closing hashes ##  
         /// ...  
-        /// ###### Header 6  
+        /// ###### Header 6
         /// </remarks>
         private IEnumerable<Block> DoHeaders(string text, Func<string, IEnumerable<Block>> defaultHandler)
         {
@@ -720,10 +734,11 @@ namespace Markdown.Xaml
 
             string header = match.Groups[2].Value;
             int level = match.Groups[1].Value.Length;
-            return CreateHeader(level, RunSpanGamut(header));
+            var textAlignment = GetTextAlignment(header);
+            return CreateHeader(level, RunSpanGamut(Regex.Replace(header, _alignment, "")), textAlignment);
         }
 
-        public Block CreateHeader(int level, IEnumerable<Inline> content)
+        public Block CreateHeader(int level, IEnumerable<Inline> content, TextAlignment textAlignment = TextAlignment.Left)
         {
             if (content is null)
             {
@@ -753,6 +768,8 @@ namespace Markdown.Xaml
                     block.Style = Heading6Style;
                     break;
             }
+
+            block.TextAlignment = textAlignment;
 
             return block;
         }
@@ -1291,9 +1308,11 @@ namespace Markdown.Xaml
             {
                 throw new ArgumentNullException(nameof(match));
             }
-
-           var block = Create<Paragraph, Inline>(RunSpanGamut(match.Groups[2].Value));
+            
+            var textAlignment = GetTextAlignment(match.Groups[2].Value);
+            var block = Create<Paragraph, Inline>(RunSpanGamut(Regex.Replace(match.Groups[2].Value, _alignment, "")));
             block.Style = CodeBlockStyle;
+            block.TextAlignment = textAlignment;
             return block;
         }
         #endregion CodeBlock
@@ -1519,7 +1538,7 @@ namespace Markdown.Xaml
         /// makes sure text ends with a couple of newlines; 
         /// removes any blank lines (only spaces) in the text
         /// </summary>
-        private string Normalize(string text)
+        private static string Normalize(string text)
         {
             if (text is null)
             {
@@ -1572,6 +1591,31 @@ namespace Markdown.Xaml
 
             // add two newlines to the end before return
             return output.Append("\n\n").ToString();
+        }
+
+        /// <summary>
+        /// Return text alignment for the document based on a specific marker.
+        /// </summary>
+        private static TextAlignment GetTextAlignment(string text)
+        {
+            if (new Regex(@"^\|-\|").IsMatch(text) ||
+                new Regex(@"^\|:-\|").IsMatch(text))
+            {
+                return TextAlignment.Left;
+            }
+            if (new Regex(@"^\|-:\|").IsMatch(text))
+            {
+                return TextAlignment.Right;
+            }
+            if (new Regex(@"^\|:-:\|").IsMatch(text))
+            {
+                return TextAlignment.Center;
+            }
+            if (new Regex(@"^\|=\|").IsMatch(text))
+            {
+                return TextAlignment.Justify;
+            }
+            return defaultTextAlignment;
         }
 
         /// <summary>
@@ -1640,7 +1684,7 @@ namespace Markdown.Xaml
         private static readonly Regex _eoln = new Regex("\\s+");
         private static readonly Regex _lbrk = new Regex(@"\ {2,}\n");
 
-        public IEnumerable<Inline> DoText(string text)
+        public static IEnumerable<Inline> DoText(string text)
         {
             if (text is null)
             {

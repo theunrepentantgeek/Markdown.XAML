@@ -4,9 +4,13 @@
     <!-- Document Style -->
     <Style x:Key="DocumentStyle" TargetType="FlowDocument">
         <Setter Property="FontFamily" Value="Calibri" />
-        <Setter Property="TextAlignment" Value="Justify" />
     </Style>
     <!-- END Document Style -->
+
+    <!-- Paragraph Style -->
+    <Style x:Key="NormalParagraphStyle" TargetType="Paragraph">
+    </Style>
+    <!-- END Paragraph Style -->
     
     <!-- Heading Style -->
     <Style x:Key="HeadingStyle" TargetType="Paragraph">
