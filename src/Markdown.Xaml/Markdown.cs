@@ -1353,6 +1353,7 @@ namespace Markdown.Xaml
             string span = match.Groups[2].Value;
             span = Regex.Replace(span, @"^[ ]*", ""); // leading whitespace
             span = Regex.Replace(span, @"[ ]*$", ""); // trailing whitespace
+            span = " " + span + " ";
 
             return new Run(span) 
             {
