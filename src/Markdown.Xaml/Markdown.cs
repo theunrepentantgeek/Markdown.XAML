@@ -304,7 +304,7 @@ namespace Markdown.Xaml
                 s1 => DoCodeSpan(s1,
                 s2 => DoImages(s2,
                 s3 => DoAnchors(s3,
-                s4 => DoItalicsAndBold(s4,
+                s4 => DoTextDecorations(s4,
                 sn => DoText(sn))))));
 
             //text = EscapeSpecialCharsWithinTagAttributes(text);
@@ -1361,28 +1361,23 @@ namespace Markdown.Xaml
         }
         #endregion CodeSpan
 
-        #region Italic and Bold
-        /// <summary>
-        /// when true, bold and italic require non-word characters on either side  
-        /// WARNING: this is a significant deviation from the markdown spec
-        /// </summary>
-        /// 
-        public bool StrictBoldItalic { get; set; }
-
-        private static readonly Regex _bold = new Regex(@"(\*\*|__) (?=\S) (.+?[*_]*) (?<=\S) \1",
-            RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
-        private static readonly Regex _strictBold = new Regex(@"([\W_]|^) (\*\*|__) (?=\S) ([^\r]*?\S[\*_]*) \2 ([\W_]|$)",
+        #region Text Decorations
+        private static readonly Regex _bold = new Regex(@"(\*\*) (?=\S) (.+?[*_]*) (?<=\S) \1",
             RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
 
-        private static readonly Regex _italic = new Regex(@"(\*|_) (?=\S) (.+?) (?<=\S) \1",
+        private static readonly Regex _italic = new Regex(@"(\*) (?=\S) (.+?) (?<=\S) \1",
             RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
-        private static readonly Regex _strictItalic = new Regex(@"([\W_]|^) (\*|_) (?=\S) ([^\r\*_]*?\S) \2 ([\W_]|$)",
+
+        private static readonly Regex _strikethrough = new Regex(@"(__) (?=\S) (.+?[*_]*) (?<=\S) \1",
+            RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex _underline = new Regex(@"(_) (?=\S) (.+?) (?<=\S) \1",
             RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
 
         /// <summary>
         /// Turn Markdown *italics* and **bold** into HTML strong and em tags
         /// </summary>
-        private IEnumerable<Inline> DoItalicsAndBold(string text, Func<string, IEnumerable<Inline>> defaultHandler)
+        private IEnumerable<Inline> DoTextDecorations(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
             if (text is null)
             {
@@ -1390,18 +1385,22 @@ namespace Markdown.Xaml
             }
 
             // <strong> must go first, then <em>
-            if (StrictBoldItalic)
+            return Evaluate<Inline>(text, _bold, m => BoldEvaluator(m, 2),
+                s1 => Evaluate<Inline>(s1, _italic, m => ItalicEvaluator(m, 2),
+                s2 => Evaluate<Inline>(s2, _strikethrough, m => StrikethroughEvaluator(m, 2),
+                s3 => Evaluate<Inline>(s3, _underline, m => UnderlineEvaluator(m, 2),
+                s4 => defaultHandler(s4)))));
+        }
+
+        private Inline BoldEvaluator(Match match, int contentGroup)
+        {
+            if (match is null)
             {
-                return Evaluate<Inline>(text, _strictBold, m => BoldEvaluator(m, 3),
-                    s1 => Evaluate<Inline>(s1, _strictItalic, m => ItalicEvaluator(m, 3),
-                    s2 => defaultHandler(s2)));
+                throw new ArgumentNullException(nameof(match));
             }
-            else
-            {
-                return Evaluate<Inline>(text, _bold, m => BoldEvaluator(m, 2),
-                   s1 => Evaluate<Inline>(s1, _italic, m => ItalicEvaluator(m, 2),
-                   s2 => defaultHandler(s2)));
-            }
+
+            var content = match.Groups[contentGroup].Value;
+            return Create<Bold, Inline>(RunSpanGamut(content));
         }
 
         private Inline ItalicEvaluator(Match match, int contentGroup)
@@ -1415,7 +1414,7 @@ namespace Markdown.Xaml
             return Create<Italic, Inline>(RunSpanGamut(content));
         }
 
-        private Inline BoldEvaluator(Match match, int contentGroup)
+        private Inline StrikethroughEvaluator(Match match, int contentGroup)
         {
             if (match is null)
             {
@@ -1423,9 +1422,20 @@ namespace Markdown.Xaml
             }
 
             var content = match.Groups[contentGroup].Value;
-            return Create<Bold, Inline>(RunSpanGamut(content));
+            return Create<Strikethrough, Inline>(RunSpanGamut(content));
         }
-        #endregion Italic and Bold
+
+        private Inline UnderlineEvaluator(Match match, int contentGroup)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var content = match.Groups[contentGroup].Value;
+            return Create<Underline, Inline>(RunSpanGamut(content));
+        }
+        #endregion Text Decorations
 
         #region Color
         private static readonly Regex _color = new Regex(
@@ -1647,6 +1657,16 @@ namespace Markdown.Xaml
                 var t = _eoln.Replace(line, " ");
                 yield return new Run(t);
             }
+        }
+    }
+
+
+
+    class Strikethrough : Span
+    {
+        public Strikethrough()
+        {
+            TextDecorations = System.Windows.TextDecorations.Strikethrough;
         }
     }
 }
