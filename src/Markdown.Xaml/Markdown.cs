@@ -161,15 +161,15 @@ namespace Markdown.Xaml
         public static readonly DependencyProperty ImageFailedStyleProperty =
             DependencyProperty.Register("ImageFailedStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
-        public Style ImageDownloadFailedStyle
-        {
-            get { return (Style)GetValue(ImageDownloadFailedStyleProperty); }
-            set { SetValue(ImageDownloadFailedStyleProperty, value); }
-        }
+        //public Style ImageDownloadFailedStyle
+        //{
+        //    get { return (Style)GetValue(ImageDownloadFailedStyleProperty); }
+        //    set { SetValue(ImageDownloadFailedStyleProperty, value); }
+        //}
 
-        // Using a DependencyProperty as the backing store for ImageDownloadFailedStyle.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ImageDownloadFailedStyleProperty =
-            DependencyProperty.Register("ImageDownloadFailedStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+        //// Using a DependencyProperty as the backing store for ImageDownloadFailedStyle.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty ImageDownloadFailedStyleProperty =
+        //    DependencyProperty.Register("ImageDownloadFailedStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style SeparatorStyle
         {
