@@ -254,6 +254,7 @@ namespace Markdown.Xaml
             defaultTextAlignment = GetTextAlignment(text);
 
             text = Regex.Replace(text, _alignment, "");
+            text = new Regex(@"^\n+", RegexOptions.Compiled).Replace(text, "");
 
             var document = Create<FlowDocument, Block>(RunBlockGamut(text));
 

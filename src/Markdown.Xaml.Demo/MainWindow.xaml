@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Markdown.Xaml;assembly=Markdown.Xaml"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:demo="clr-namespace:Markdown.Demo"
         Title="Markdown.Xaml Demo"
         Height="600"
         Width="800"
@@ -33,35 +34,95 @@
         <local:TextToFlowDocumentConverter x:Key="TextToFlowDocumentConverter" 
                                            Markdown="{StaticResource Markdown}"/>
 
+        <demo:BoolToEnabledConverter x:Key="BoolToEnabledConverter"/>
+
     </Window.Resources>
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <Grid>        
+        <TabControl>
+            <TabItem Header="Editor">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-        <TextBox x:Name="editSource"
-                 Grid.Row="0"
-                 Grid.Column="0"
-                 VerticalAlignment="Stretch"
-                 HorizontalAlignment="Stretch"
-                 TextWrapping="Wrap"
-                 AcceptsReturn="True"
-                 Margin="5" 
-                 VerticalScrollBarVisibility="Auto" 
-                 FontFamily="Consolas"
-                 BorderBrush="DimGray"
-                 BorderThickness="1"/>
+                    <Label Grid.Column="0" Grid.Row="0" Content="Markdown" HorizontalAlignment="Left" Margin="5,0" Foreground="DimGray"/>
 
-        <FlowDocumentScrollViewer Grid.Row="0"
+                    <Button Grid.Column="0" Grid.Row="0"
+                        Content="Preview" HorizontalAlignment="Right" VerticalAlignment="Top" Width="75" Margin="5,5,5,0" Click="Preview_Click"
+                        IsEnabled="{Binding ElementName=Live, Path=IsChecked, Converter={StaticResource BoolToEnabledConverter}}"/>
+
+                    <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Margin="5,5,5,0">
+                        <!--<CheckBox Content="Auto preview" Width="120" VerticalAlignment="Center"/>-->
+                        <CheckBox x:Name="Live" Content="Live!" Width="120" VerticalAlignment="Center" IsChecked="{Binding IsLive}"/>
+                    </StackPanel>
+
+                    <Label Grid.Column="1" Grid.Row="0" Content="Preview" HorizontalAlignment="Right" Margin="5,0" Foreground="DimGray"/>
+
+                    <TextBox Grid.Row="1"
+                             Grid.Column="0"
+                             VerticalAlignment="Stretch"
+                             HorizontalAlignment="Stretch"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             Margin="5" 
+                             VerticalScrollBarVisibility="Auto" 
+                             FontFamily="Consolas"
+                             BorderBrush="DimGray"
+                             BorderThickness="1"
+                             Text="{Binding TextMarkdown, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <FlowDocumentScrollViewer x:Name="DocumentPreview"
+                                  Grid.Row="1"
                                   Grid.Column="1"
                                   VerticalAlignment="Stretch"
                                   HorizontalAlignment="Stretch"
                                   Margin="5"
-                                  Document="{Binding ElementName=editSource, Path=Text, Converter={StaticResource TextToFlowDocumentConverter}}"
+                                  Document="{Binding TextPreview, Converter={StaticResource TextToFlowDocumentConverter}}"
                                   BorderBrush="DimGray"
-                                  BorderThickness="1"/>
+                                  BorderThickness="1"
+                                  VerticalScrollBarVisibility="Auto"/>
+                </Grid>
+            </TabItem>
+            
+            <TabItem Header="DEMO">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="demoSource"
+                             Grid.Row="0"
+                             Grid.Column="0"
+                             VerticalAlignment="Stretch"
+                             HorizontalAlignment="Stretch"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             Margin="5" 
+                             VerticalScrollBarVisibility="Auto" 
+                             FontFamily="Consolas"
+                             BorderBrush="DimGray"
+                             BorderThickness="1"
+                             IsReadOnly="False"/>
+
+                    <FlowDocumentScrollViewer Grid.Row="0"
+                                  Grid.Column="1"
+                                  VerticalAlignment="Stretch"
+                                  HorizontalAlignment="Stretch"
+                                  Margin="5"
+                                  Document="{Binding ElementName=demoSource, Path=Text, Converter={StaticResource TextToFlowDocumentConverter}}"
+                                  BorderBrush="DimGray"
+                                  BorderThickness="1"
+                                  VerticalScrollBarVisibility="Auto"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
     </Grid>
 </Window>
