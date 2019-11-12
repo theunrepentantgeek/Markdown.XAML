@@ -914,7 +914,7 @@ namespace Markdown.Xaml
 
         #region List
         private const string _markerUL = @"[*+=-]";
-        private const string _markerOL = @"\d+[.]|\p{L}+[.]";
+        private const string _markerOL = @"\d+[.]|\p{L}+[.,]";
 
         // Unordered List
         private const string _markerUL_Disc = @"[*]";
@@ -926,6 +926,8 @@ namespace Markdown.Xaml
         private const string _markerOL_Number = @"\d+[.]";
         private const string _markerOL_LetterLower = @"\p{Ll}+[.]";
         private const string _markerOL_LetterUpper = @"\p{Lu}+[.]";
+        private const string _markerOL_RomanLower = @"\p{Ll}+[,]";
+        private const string _markerOL_RomanUpper = @"\p{Lu}+[,]";
 
         private int _listLevel;
 
@@ -1116,6 +1118,14 @@ namespace Markdown.Xaml
                     else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_LetterUpper))
                     {
                         return TextMarkerStyle.UpperLatin;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_RomanLower))
+                    {
+                        return TextMarkerStyle.LowerRoman;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_RomanUpper))
+                    {
+                        return TextMarkerStyle.UpperRoman;
                     }
                     break;
             }
