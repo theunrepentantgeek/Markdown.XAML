@@ -12,6 +12,7 @@
 
         <local:Markdown x:Key="Markdown"
                         DocumentStyle="{StaticResource DocumentStyle}"
+                        BlockQuoteStyle="{StaticResource BlockQuoteStyle}"
                         CodeBlockStyle="{StaticResource CodeBlockStyle}"
                         CodeSpanStyle="{StaticResource CodeSpanStyle}"
                         Heading1Style="{StaticResource H1Style}"
@@ -24,6 +25,7 @@
                         ImageStyle="{StaticResource ImageStyle}"
                         ImageFailedStyle="{StaticResource ImageFailedStyle}"
                         NormalParagraphStyle="{StaticResource NormalParagraphStyle}"
+                        NoteStyle="{StaticResource NoteStyle}"
                         SeparatorStyle="{StaticResource SeparatorStyle}"
                         TableStyle="{StaticResource TableStyle}"
                         TableHeaderStyle="{StaticResource TableHeaderStyle}"

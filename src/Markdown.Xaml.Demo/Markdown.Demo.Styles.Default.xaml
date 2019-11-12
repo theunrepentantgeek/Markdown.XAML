@@ -125,4 +125,19 @@
     </Style>
     <!-- END Code Style -->
 
+    <!-- BlockQuote Style -->
+    <Style x:Key="BlockQuoteStyle" TargetType="RichTextBox">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="Silver" />
+        <Setter Property="Padding" Value="0, 10" />
+    </Style>
+    <!-- END Comment Style -->
+
+    <!-- Note Style -->
+    <Style x:Key="NoteStyle" TargetType="Paragraph">
+        <Setter Property="Background" Value="LightGray" />
+        <Setter Property="Padding" Value="10" />
+    </Style>
+    <!-- END Note Style -->
+
 </ResourceDictionary>

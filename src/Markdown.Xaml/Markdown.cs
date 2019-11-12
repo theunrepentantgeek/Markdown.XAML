@@ -116,6 +116,26 @@ namespace Markdown.Xaml
         public static readonly DependencyProperty Heading6StyleProperty =
             DependencyProperty.Register("Heading6Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
+        public Style BlockQuoteStyle
+        {
+            get { return (Style)GetValue(BlockQuoteStyleProperty); }
+            set { SetValue(BlockQuoteStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for BlockQuoteStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty BlockQuoteStyleProperty =
+            DependencyProperty.Register("BlockQuoteStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style NoteStyle
+        {
+            get { return (Style)GetValue(NoteStyleProperty); }
+            set { SetValue(NoteStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for NoteStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NoteStyleProperty =
+            DependencyProperty.Register("NoteStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
         public Style CodeBlockStyle
         {
             get { return (Style)GetValue(CodeBlockStyleProperty); }
@@ -282,14 +302,13 @@ namespace Markdown.Xaml
             }
 
             return DoHeaders(text,
-                s1 => DoHorizontalRules(s1,
-                s2 => DoLists(s2,
-                s3 => DoTable(s3,
-                s4 => DoCodeBlock(s4,
-                sn => FormParagraphs(sn))))));
-
-            //text = DoCodeBlocks(text);
-            //text = DoBlockQuotes(text);
+                s1 => DoNote(s1,
+                s2 => DoHorizontalRules(s2,
+                s3 => DoLists(s3,
+                s4 => DoTable(s4,
+                s5 => DoCodeBlock(s5,
+                s6 => DoBlockQuotes(s6,
+                sn => FormParagraphs(sn))))))));
 
             //// We already ran HashHTMLBlocks() before, in Markdown(), but that
             //// was to escape raw HTML in the original Markdown source. This time,
@@ -775,6 +794,150 @@ namespace Markdown.Xaml
             return block;
         }
         #endregion Header
+
+        #region BlockQuotes
+        private static readonly Regex _blockquotes = new Regex(@"
+                ^(\>{1,9})  # $1 = string of >'s
+                [ ]*
+                (.+?)       # $2 = Header text
+                [ ]*
+                \n+
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown into HTML blockquotes.
+        /// </summary>
+        /// <remarks>
+        /// > quote 1
+        /// >> quote 2
+        /// ...
+        /// >>>>>>>>> quote 9
+        /// </remarks>
+        private IEnumerable<Block> DoBlockQuotes(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            return Evaluate<Block>(text, _blockquotes, m => BlockQuotesEvaluator(m), defaultHandler);
+        }
+
+        private Block BlockQuotesEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            string text = match.Groups[2].Value;
+            int level = match.Groups[1].Value.Length;
+            var textAlignment = GetTextAlignment(text);
+            return CreateBlockQuotes(level, RunSpanGamut(Regex.Replace(text, _alignment, "")), textAlignment);
+        }
+
+        public Block CreateBlockQuotes(int level, IEnumerable<Inline> content, TextAlignment textAlignment = TextAlignment.Left)
+        {
+            if (content is null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            //var block = Create<Paragraph, Inline>(content);
+            //block.Style = CommentStyle;
+            //block.TextAlignment = textAlignment;
+
+            //return block;
+
+            return new BlockUIContainer(CreateBorderBlockQuotes(level, content));
+        }
+
+        public Border CreateBorderBlockQuotes(int level, IEnumerable<Inline> content)
+        {
+            if (level > 1)
+            {
+                return new Border()
+                {
+                    BorderBrush = Brushes.Silver,
+                    BorderThickness = new Thickness(2, 0, 0, 0),
+                    Child = CreateBorderBlockQuotes(level - 1, content),
+                    Padding = new Thickness(10, 0, 0, 0)
+                };
+            }
+            else
+            {
+                var commentFDoc = new FlowDocument(Create<Paragraph, Inline>(content));
+                //{
+                //    Style = DocumentStyle,
+                //    TextAlignment = defaultTextAlignment
+                //};
+
+                return new Border()
+                {
+                    BorderBrush = Brushes.Silver,
+                    BorderThickness = new Thickness(2, 0, 0, 0),
+                    Child = new RichTextBox(commentFDoc)
+                    {
+                        Style = BlockQuoteStyle
+                    },
+                    Padding = new Thickness(10, 0, 0, 0)
+                };
+            }
+        }
+        #endregion BlockQuotes
+
+        #region Note
+        private static readonly Regex _note = new Regex(@"
+                ^(\<)       # $1 = starting marker <
+                [ ]*
+                (.+?)       # $2 = Header text
+                [ ]*
+                \>*         # optional closing >'s (not counted)
+                \n+
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown into HTML paragraphs.
+        /// </summary>
+        /// <remarks>
+        /// < Note
+        /// </remarks>
+        private IEnumerable<Block> DoNote(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            return Evaluate<Block>(text, _note, m => NoteEvaluator(m), defaultHandler);
+        }
+
+        private Block NoteEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            string text = match.Groups[2].Value;
+            var textAlignment = GetTextAlignment(text);
+            return NoteComment(RunSpanGamut(Regex.Replace(text, _alignment, "")), textAlignment);
+        }
+
+        public Block NoteComment(IEnumerable<Inline> content, TextAlignment textAlignment = TextAlignment.Left)
+        {
+            if (content is null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            var block = Create<Paragraph, Inline>(content);
+            block.Style = NoteStyle;
+            block.TextAlignment = textAlignment;
+
+            return block;
+        }
+        #endregion Note
 
         #region Horizontal Rules
         private static readonly Regex _horizontalRules = HorizontalRulesRegex("-");

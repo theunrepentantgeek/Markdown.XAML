@@ -18,6 +18,7 @@ If there are any bug fixes to the regular expressions in MarkdownSharp, merging 
 # 
 ## Markdown capabilities and customizables styles: ##
 
+###### 
 #|:-:|***_BLOCK MARKDOWN_***
  ===
 
@@ -106,13 +107,35 @@ Heading 2
 
 
 ###***_Code Block_***
+"Text" accepts any _span markdown_.
 Text above
 «text code block text code block text code block text code block text code block text code block text code block text code block text code block.»
 Text below
 
 
 
+###***_Note_***
+"Text" accepts any _span markdown_.
+Text above
+<text note text note text note text note text note text note text note text note text note text note text note text note text note text note.
+Text below
+< text note >
 
+
+
+###***_BlockQuotes_***
+"Text" accepts any _span markdown_.
+>Quote 1
+>>Quote 2a
+>>Quote 2b
+>>> Quote 3
+>>>>Quote 4 quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote quote
+>>>>>>>>> Up to 9
+
+
+
+
+###### 
  ___
 # 
 #|:-:|***_SPAN MARKDOWN_***
