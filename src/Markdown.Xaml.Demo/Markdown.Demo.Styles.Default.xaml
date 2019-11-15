@@ -127,6 +127,7 @@
 
     <!-- BlockQuote Style -->
     <Style x:Key="BlockQuoteStyle" TargetType="RichTextBox">
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="Silver" />
         <Setter Property="Padding" Value="0, 10" />
