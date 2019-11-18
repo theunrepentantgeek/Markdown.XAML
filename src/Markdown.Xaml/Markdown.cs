@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace Markdown.Xaml
 {
@@ -29,25 +30,21 @@ namespace Markdown.Xaml
         /// </summary>
         private const int _tabWidth = 4;
 
-        private const string _markerUL = @"[*+-]";
-        private const string _markerOL = @"\d+[.]";
-
-        private int _listLevel;
-
         /// <summary>
-        /// when true, bold and italic require non-word characters on either side  
-        /// WARNING: this is a significant deviation from the markdown spec
+        /// Default text alignment, equal to the one defined at document level.
         /// </summary>
-        /// 
-        public bool StrictBoldItalic { get; set; }
-
-        public ICommand HyperlinkCommand { get; set; }
-
+        private static TextAlignment defaultTextAlignment = TextAlignment.Left;
+        
+        #region Style
         public Style DocumentStyle
         {
             get { return (Style)GetValue(DocumentStyleProperty); }
             set { SetValue(DocumentStyleProperty, value); }
         }
+
+        // Using a DependencyProperty as the backing store for DocumentStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty DocumentStyleProperty =
+            DependencyProperty.Register("DocumentStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style NormalParagraphStyle
         {
@@ -58,10 +55,6 @@ namespace Markdown.Xaml
         // Using a DependencyProperty as the backing store for NormalParagraphStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty NormalParagraphStyleProperty =
             DependencyProperty.Register("NormalParagraphStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
-
-        // Using a DependencyProperty as the backing store for DocumentStyle.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty DocumentStyleProperty =
-            DependencyProperty.Register("DocumentStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style Heading1Style
         {
@@ -103,15 +96,65 @@ namespace Markdown.Xaml
         public static readonly DependencyProperty Heading4StyleProperty =
             DependencyProperty.Register("Heading4Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
-        public Style CodeStyle
+        public Style Heading5Style
         {
-            get { return (Style)GetValue(CodeStyleProperty); }
-            set { SetValue(CodeStyleProperty, value); }
+            get { return (Style)GetValue(Heading5StyleProperty); }
+            set { SetValue(Heading5StyleProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for CodeStyle.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty CodeStyleProperty =
-            DependencyProperty.Register("CodeStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+        // Using a DependencyProperty as the backing store for Heading5Style.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty Heading5StyleProperty =
+            DependencyProperty.Register("Heading5Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style Heading6Style
+        {
+            get { return (Style)GetValue(Heading6StyleProperty); }
+            set { SetValue(Heading6StyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Heading6Style.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty Heading6StyleProperty =
+            DependencyProperty.Register("Heading6Style", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style BlockQuoteStyle
+        {
+            get { return (Style)GetValue(BlockQuoteStyleProperty); }
+            set { SetValue(BlockQuoteStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for BlockQuoteStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty BlockQuoteStyleProperty =
+            DependencyProperty.Register("BlockQuoteStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style NoteStyle
+        {
+            get { return (Style)GetValue(NoteStyleProperty); }
+            set { SetValue(NoteStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for NoteStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NoteStyleProperty =
+            DependencyProperty.Register("NoteStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style CodeBlockStyle
+        {
+            get { return (Style)GetValue(CodeBlockStyleProperty); }
+            set { SetValue(CodeBlockStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CodeBlockStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CodeBlockStyleProperty =
+            DependencyProperty.Register("CodeBlockStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style CodeSpanStyle
+        {
+            get { return (Style)GetValue(CodeSpanStyleProperty); }
+            set { SetValue(CodeSpanStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CodeSpanStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CodeSpanStyleProperty =
+            DependencyProperty.Register("CodeSpanStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
         public Style LinkStyle
         {
@@ -133,6 +176,26 @@ namespace Markdown.Xaml
         public static readonly DependencyProperty ImageStyleProperty =
             DependencyProperty.Register("ImageStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
+        public Style ImageFailedStyle
+        {
+            get { return (Style)GetValue(ImageFailedStyleProperty); }
+            set { SetValue(ImageFailedStyleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ImageFailedStyle.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ImageFailedStyleProperty =
+            DependencyProperty.Register("ImageFailedStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        //public Style ImageDownloadFailedStyle
+        //{
+        //    get { return (Style)GetValue(ImageDownloadFailedStyleProperty); }
+        //    set { SetValue(ImageDownloadFailedStyleProperty, value); }
+        //}
+
+        //// Using a DependencyProperty as the backing store for ImageDownloadFailedStyle.  This enables animation, styling, binding, etc...
+        //public static readonly DependencyProperty ImageDownloadFailedStyleProperty =
+        //    DependencyProperty.Register("ImageDownloadFailedStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
         public Style SeparatorStyle
         {
             get { return (Style)GetValue(SeparatorStyleProperty); }
@@ -149,8 +212,9 @@ namespace Markdown.Xaml
             set { SetValue(AssetPathRootProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for AssetPathRoot.
         public static readonly DependencyProperty AssetPathRootProperty =
-            DependencyProperty.Register("AssetPathRootRoot", typeof(string), typeof(Markdown), new PropertyMetadata(null));
+            DependencyProperty.Register("AssetPathRoot", typeof(string), typeof(Markdown), new PropertyMetadata(null));
 
         public Style TableStyle
         {
@@ -158,6 +222,7 @@ namespace Markdown.Xaml
             set { SetValue(TableStyleProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for TableStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TableStyleProperty =
             DependencyProperty.Register("TableStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
@@ -167,6 +232,7 @@ namespace Markdown.Xaml
             set { SetValue(TableHeaderStyleProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for TableHeaderStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TableHeaderStyleProperty =
             DependencyProperty.Register("TableHeaderStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
 
@@ -176,8 +242,20 @@ namespace Markdown.Xaml
             set { SetValue(TableBodyStyleProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for TableBodyStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TableBodyStyleProperty =
             DependencyProperty.Register("TableBodyStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+
+        public Style TableRowAltStyle
+        {
+            get { return (Style)GetValue(TableRowAltStyleProperty); }
+            set { SetValue(TableRowAltStyleProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for TableRowAltStyle.  This enables animation, styling, binding, etc...
+
+        public static readonly DependencyProperty TableRowAltStyleProperty =
+            DependencyProperty.Register("TableRowAltStyle", typeof(Style), typeof(Markdown), new PropertyMetadata(null));
+        #endregion Style
 
         public Markdown()
         {
@@ -192,6 +270,12 @@ namespace Markdown.Xaml
             }
 
             text = Normalize(text);
+
+            defaultTextAlignment = GetTextAlignment(text);
+
+            text = Regex.Replace(text, _alignment, "");
+            text = new Regex(@"^\n+", RegexOptions.Compiled).Replace(text, "");
+
             var document = Create<FlowDocument, Block>(RunBlockGamut(text));
 
             if (DocumentStyle != null)
@@ -200,8 +284,9 @@ namespace Markdown.Xaml
             }
             else
             {
-                document.PagePadding = new Thickness(0);
+                document.PagePadding = new Thickness(10);
             }
+            document.TextAlignment = defaultTextAlignment;
 
             return document;
         }
@@ -217,13 +302,13 @@ namespace Markdown.Xaml
             }
 
             return DoHeaders(text,
-                s1 => DoHorizontalRules(s1,
-                    s2 => DoLists(s2,
-                    s3 => DoTable(s3,
-                    sn => FormParagraphs(sn)))));
-
-            //text = DoCodeBlocks(text);
-            //text = DoBlockQuotes(text);
+                s1 => DoNote(s1,
+                s2 => DoHorizontalRules(s2,
+                s3 => DoLists(s3,
+                s4 => DoTable(s4,
+                s5 => DoCodeBlock(s5,
+                s6 => DoBlockQuotes(s6,
+                sn => FormParagraphs(sn))))))));
 
             //// We already ran HashHTMLBlocks() before, in Markdown(), but that
             //// was to escape raw HTML in the original Markdown source. This time,
@@ -246,11 +331,12 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(text));
             }
 
-            return DoCodeSpans(text,
-                s0 => DoImages(s0,
-                s1 => DoAnchors(s1,
-                s2 => DoItalicsAndBold(s2,
-                s3 => DoText(s3)))));
+            return DoColor(text,
+                s1 => DoCodeSpan(s1,
+                s2 => DoImages(s2,
+                s3 => DoAnchors(s3,
+                s4 => DoTextDecorations(s4,
+                sn => DoText(sn))))));
 
             //text = EscapeSpecialCharsWithinTagAttributes(text);
             //text = EscapeBackslashes(text);
@@ -273,6 +359,7 @@ namespace Markdown.Xaml
         private static readonly Regex _newlinesLeadingTrailing = new Regex(@"^\n+|\n+\z", RegexOptions.Compiled);
         private static readonly Regex _newlinesMultiple = new Regex(@"\n{2,}", RegexOptions.Compiled);
         private static readonly Regex _leadingWhitespace = new Regex(@"^[ ]*", RegexOptions.Compiled);
+        private const string _alignment = @"^\|-\||^\|:-\||^\|-:\||^\|:-:\||^\|=\|";
 
         /// <summary>
         /// splits on two or more newlines, to form "paragraphs";    
@@ -289,8 +376,10 @@ namespace Markdown.Xaml
 
             foreach (var g in grafs)
             {
-                var block = Create<Paragraph, Inline>(RunSpanGamut(g));
-                block.Style = this.NormalParagraphStyle;
+                var textAlignment = GetTextAlignment(text);
+                var block = Create<Paragraph, Inline>(RunSpanGamut(Regex.Replace(g, _alignment, "")));
+                block.Style = NormalParagraphStyle;
+                block.TextAlignment = textAlignment;
                 yield return block;
             }
         }
@@ -357,7 +446,7 @@ namespace Markdown.Xaml
                 _nestedParensPatternWithWhiteSpace =
                     RepeatString(@"
                     (?>              # Atomic matching
-                       [^()]+      # Anything other than parens
+                       [^()]+        # Anything other than parens
                      |
                        \(
                            ", _nestDepth) + RepeatString(
@@ -367,6 +456,7 @@ namespace Markdown.Xaml
             return _nestedParensPatternWithWhiteSpace;
         }
 
+        #region Image
         private static readonly Regex _imageInline = new Regex(
             string.Format(CultureInfo.InvariantCulture, @"
                 (                           # wrap whole match in $1
@@ -378,33 +468,11 @@ namespace Markdown.Xaml
                         ({1})               # href = $3
                         [ ]*
                         (                   # $4
-                        (['""])           # quote char = $5
-                        (.*?)               # title = $6
-                        \5                  # matching quote
-                        #[ ]*                # ignore any spaces between closing quote and )
-                        )?                  # title is optional
-                    \)
-                )",
-            GetNestedBracketsPattern(),
-            GetNestedParensPatternWithWhiteSpace()),
-                  RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
-
-        private static readonly Regex _anchorInline = new Regex(
-            string.Format(CultureInfo.InvariantCulture, @"
-                (                           # wrap whole match in $1
-                    \[
-                        ({0})               # link text = $2
-                    \]
-                    \(                      # literal paren
-                        [ ]*
-                        ({1})               # href = $3
-                        [ ]*
-                        (                   # $4
-                        (['""])           # quote char = $5
-                        (.*?)               # title = $6
+                        (['""])             # quote char = $5
+                        (.*?)               # tag = $6
                         \5                  # matching quote
                         [ ]*                # ignore any spaces between closing quote and )
-                        )?                  # title is optional
+                        )?                  # tag is optional
                     \)
                 )", GetNestedBracketsPattern(), GetNestedParensPattern()),
                   RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
@@ -413,7 +481,7 @@ namespace Markdown.Xaml
         /// Turn Markdown images into images
         /// </summary>
         /// <remarks>
-        /// ![image alt](url) 
+        /// ![image alt](url "tag") 
         /// </remarks>
         private IEnumerable<Inline> DoImages(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
@@ -432,8 +500,10 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(match));
             }
 
-            string linkText = match.Groups[2].Value;
+            string imageAlt = match.Groups[2].Value;
             string url = match.Groups[3].Value;
+            string tag = match.Groups[6].Value;
+
             BitmapImage imgSource = null;
             try
             {
@@ -442,21 +512,28 @@ namespace Markdown.Xaml
                     url = System.IO.Path.Combine(AssetPathRoot ?? string.Empty, url);
                 }
 
-                imgSource = new BitmapImage();
-                imgSource.BeginInit();
-                imgSource.CacheOption = BitmapCacheOption.None;
-                imgSource.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
-                imgSource.CacheOption = BitmapCacheOption.OnLoad;
-                imgSource.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                imgSource.UriSource = new Uri(url);
-                imgSource.EndInit();
+                imgSource = CreateBitmapImage(url);
             }
             catch (Exception)
             {
-                return new Run("!" + url) { Foreground = Brushes.Red };
+                //return new Run("!" + (!string.IsNullOrEmpty(imageAlt) ? imageAlt : url)) { Style = ImageDownloadFailedStyle };                
+
+                imgSource = CreateBitmapImage();
+                Image img = new Image()
+                {
+                    Source = imgSource,
+                    Width = imgSource.Width,
+                    ToolTip = ToolTipForImageFailed(imageAlt, url),
+                    Style = ImageFailedStyle
+                };
+                return new InlineUIContainer(img);
             }
 
-            Image image = new Image { Source = imgSource, Tag = linkText };
+            Image image = new Image { Source = imgSource, Tag = tag };
+            if (!string.IsNullOrWhiteSpace(imageAlt))
+            {
+                image.ToolTip = imageAlt;
+            }
             if (ImageStyle is null)
             {
                 image.Margin = new Thickness(0);
@@ -478,10 +555,24 @@ namespace Markdown.Xaml
                 void downloadCompletedHandler(object sender, EventArgs e)
                 {
                     imgSource.DownloadCompleted -= downloadCompletedHandler;
+                    imgSource.DownloadFailed -= downloadFailedHandler;
                     bindingExpression.UpdateTarget();
                 }
 
+                void downloadFailedHandler(object sender, EventArgs e)
+                {
+                    imgSource.DownloadCompleted -= downloadCompletedHandler;
+                    imgSource.DownloadFailed -= downloadFailedHandler;
+                    // default image when download failed
+                    imgSource = CreateBitmapImage();
+                    image.Source = imgSource;
+                    image.Width = imgSource.Width;
+                    image.ToolTip = ToolTipForImageFailed(imageAlt, url);
+                    image.Style = ImageFailedStyle;
+                }
+
                 imgSource.DownloadCompleted += downloadCompletedHandler;
+                imgSource.DownloadFailed += downloadFailedHandler;
             }
             else
             {
@@ -490,6 +581,68 @@ namespace Markdown.Xaml
 
             return new InlineUIContainer(image);
         }
+
+        /// <summary>
+        /// Return a BitmapImage to add it as a source to the Image.
+        /// </summary>
+        /// <param name="url">Url of the image to load.</param>
+        private BitmapImage CreateBitmapImage(string url = null)
+        {
+            BitmapImage imgSource = new BitmapImage();
+            imgSource.BeginInit();
+            imgSource.CacheOption = BitmapCacheOption.None;
+            imgSource.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+            imgSource.CacheOption = BitmapCacheOption.OnLoad;
+            imgSource.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            imgSource.UriSource = !string.IsNullOrEmpty(url) ? new Uri(url)
+                                                             : new Uri(System.IO.Path.Combine(AssetPathRoot ?? string.Empty, "imgfailed.png"));
+            imgSource.EndInit();
+            return imgSource;
+        }
+
+        /// <summary>
+        /// Create a ToolTip to set on the image when it fails to load.
+        /// </summary>
+        /// <param name="imageAlt">Image alternative text.</param>
+        /// <param name="url">File location.</param>
+        private static StackPanel ToolTipForImageFailed(string imageAlt, string url)
+        {
+            var stackPanel = new StackPanel();
+            stackPanel.Children.Add(new TextBlock()
+            {
+                Text = imageAlt
+            });
+            stackPanel.Children.Add(new TextBlock()
+            {
+                Text = url
+            });
+
+            return stackPanel;
+        }
+        #endregion Image
+
+        #region HyperLink
+        public ICommand HyperlinkCommand { get; set; }
+
+        private static readonly Regex _anchorInline = new Regex(
+            string.Format(CultureInfo.InvariantCulture, @"
+                (                           # wrap whole match in $1
+                    \[
+                        ({0})               # link text = $2
+                    \]
+                    \(                      # literal paren
+                        [ ]*
+                        ({1})               # href = $3
+                        [ ]*
+                        (                   # $4
+                        (['""])             # quote char = $5
+                        (.*?)               # title = $6
+                        \5                  # matching quote
+                        [ ]*                # ignore any spaces between closing quote and )
+                        )?                  # title is optional
+                    \)
+                )", GetNestedBracketsPattern(), GetNestedParensPattern()),
+                  RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
         /// <summary>
         /// Turn Markdown link shortcuts into hyperlinks
@@ -504,7 +657,7 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(text));
             }
 
-            // Next, inline-style links: [link text](url "optional title") or [link text](url "optional title")
+            // Next, inline-style links: [link text](url "optional title")
             return Evaluate(text, _anchorInline, AnchorInlineEvaluator, defaultHandler);
         }
 
@@ -526,22 +679,21 @@ namespace Markdown.Xaml
             {
                 result.ToolTip = title;
             }
-            if (LinkStyle != null)
-            {
-                result.Style = LinkStyle;
-            }
+            result.Style = LinkStyle;
 
             return result;
         }
+        #endregion HyperLink
 
+        #region Header
         private static readonly Regex _headerSetext = new Regex(@"
                 ^(.+?)
                 [ ]*
                 \n
                 (=+|-+)     # $1 = string of ='s or -'s
                 [ ]*
-                \n+",
-    RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                \n+
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
         private static readonly Regex _headerAtx = new Regex(@"
                 ^(\#{1,6})  # $1 = string of #'s
@@ -549,8 +701,8 @@ namespace Markdown.Xaml
                 (.+?)       # $2 = Header text
                 [ ]*
                 \#*         # optional closing #'s (not counted)
-                \n+",
-            RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                \n+
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
         /// <summary>
         /// Turn Markdown headers into HTML header tags
@@ -566,7 +718,7 @@ namespace Markdown.Xaml
         /// ## Header 2  
         /// ## Header 2 with closing hashes ##  
         /// ...  
-        /// ###### Header 6  
+        /// ###### Header 6
         /// </remarks>
         private IEnumerable<Block> DoHeaders(string text, Func<string, IEnumerable<Block>> defaultHandler)
         {
@@ -602,10 +754,11 @@ namespace Markdown.Xaml
 
             string header = match.Groups[2].Value;
             int level = match.Groups[1].Value.Length;
-            return CreateHeader(level, RunSpanGamut(header));
+            var textAlignment = GetTextAlignment(header);
+            return CreateHeader(level, RunSpanGamut(Regex.Replace(header, _alignment, "")), textAlignment);
         }
 
-        public Block CreateHeader(int level, IEnumerable<Inline> content)
+        public Block CreateHeader(int level, IEnumerable<Inline> content, TextAlignment textAlignment = TextAlignment.Left)
         {
             if (content is null)
             {
@@ -617,57 +770,209 @@ namespace Markdown.Xaml
             switch (level)
             {
                 case 1:
-                    if (Heading1Style != null)
-                    {
-                        block.Style = Heading1Style;
-                    }
+                    block.Style = Heading1Style;
                     break;
-
                 case 2:
-                    if (Heading2Style != null)
-                    {
-                        block.Style = Heading2Style;
-                    }
+                    block.Style = Heading2Style;
                     break;
-
                 case 3:
-                    if (Heading3Style != null)
-                    {
-                        block.Style = Heading3Style;
-                    }
+                    block.Style = Heading3Style;
                     break;
-
                 case 4:
-                    if (Heading4Style != null)
-                    {
-                        block.Style = Heading4Style;
-                    }
+                    block.Style = Heading4Style;
+                    break;
+                case 5:
+                    block.Style = Heading5Style;
+                    break;
+                case 6:
+                    block.Style = Heading6Style;
                     break;
             }
 
+            block.TextAlignment = textAlignment;
+
             return block;
         }
+        #endregion Header
 
-        private static readonly Regex _horizontalRules = new Regex(@"
-            ^[ ]{0,3}         # Leading space
-                ([-*_])       # $1: First marker
-                (?>           # Repeated marker group
-                    [ ]{0,2}  # Zero, one, or two spaces.
-                    \1        # Marker character
-                ){2,}         # Group repeated at least twice
-                [ ]*          # Trailing spaces
-                $             # End of line.
+        #region BlockQuotes
+        private static readonly Regex _blockquotes = new Regex(@"
+                ^(\>{1,9})  # $1 = string of >'s
+                [ ]*
+                (.+?)       # $2 = Header text
+                [ ]*
+                \n+
             ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown into HTML blockquotes.
+        /// </summary>
+        /// <remarks>
+        /// > quote 1
+        /// >> quote 2
+        /// ...
+        /// >>>>>>>>> quote 9
+        /// </remarks>
+        private IEnumerable<Block> DoBlockQuotes(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            return Evaluate<Block>(text, _blockquotes, m => BlockQuotesEvaluator(m), defaultHandler);
+        }
+
+        private Block BlockQuotesEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            string text = match.Groups[2].Value;
+            int level = match.Groups[1].Value.Length;
+            var textAlignment = GetTextAlignment(text);
+            return CreateBlockQuotes(level, RunSpanGamut(Regex.Replace(text, _alignment, "")), textAlignment);
+        }
+
+        public Block CreateBlockQuotes(int level, IEnumerable<Inline> content, TextAlignment textAlignment = TextAlignment.Left)
+        {
+            if (content is null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            //var block = Create<Paragraph, Inline>(content);
+            //block.Style = CommentStyle;
+            //block.TextAlignment = textAlignment;
+
+            //return block;
+
+            return new BlockUIContainer(CreateBorderBlockQuotes(level, content));
+        }
+
+        public Border CreateBorderBlockQuotes(int level, IEnumerable<Inline> content)
+        {
+            if (level > 1)
+            {
+                return new Border()
+                {
+                    BorderBrush = Brushes.Silver,
+                    BorderThickness = new Thickness(2, 0, 0, 0),
+                    Child = CreateBorderBlockQuotes(level - 1, content),
+                    Padding = new Thickness(10, 0, 0, 0)
+                };
+            }
+            else
+            {
+                var commentFDoc = new FlowDocument(Create<Paragraph, Inline>(content));
+                //{
+                //    Style = DocumentStyle,
+                //    TextAlignment = defaultTextAlignment
+                //};
+
+                return new Border()
+                {
+                    BorderBrush = Brushes.Silver,
+                    BorderThickness = new Thickness(2, 0, 0, 0),
+                    Child = new RichTextBox(commentFDoc)
+                    {
+                        Style = BlockQuoteStyle
+                    },
+                    Padding = new Thickness(10, 0, 0, 0)
+                };
+            }
+        }
+        #endregion BlockQuotes
+
+        #region Note
+        private static readonly Regex _note = new Regex(@"
+                ^(\<)       # $1 = starting marker <
+                [ ]*
+                (.+?)       # $2 = Header text
+                [ ]*
+                \>*         # optional closing >'s (not counted)
+                \n+
+            ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown into HTML paragraphs.
+        /// </summary>
+        /// <remarks>
+        /// < Note
+        /// </remarks>
+        private IEnumerable<Block> DoNote(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            return Evaluate<Block>(text, _note, m => NoteEvaluator(m), defaultHandler);
+        }
+
+        private Block NoteEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            string text = match.Groups[2].Value;
+            var textAlignment = GetTextAlignment(text);
+            return NoteComment(RunSpanGamut(Regex.Replace(text, _alignment, "")), textAlignment);
+        }
+
+        public Block NoteComment(IEnumerable<Inline> content, TextAlignment textAlignment = TextAlignment.Left)
+        {
+            if (content is null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            var block = Create<Paragraph, Inline>(content);
+            block.Style = NoteStyle;
+            block.TextAlignment = textAlignment;
+
+            return block;
+        }
+        #endregion Note
+
+        #region Horizontal Rules
+        private static readonly Regex _horizontalRules = HorizontalRulesRegex("-");
+        private static readonly Regex _horizontalTwoLinesRules = HorizontalRulesRegex("=");
+        private static readonly Regex _horizontalBoldRules = HorizontalRulesRegex("*");
+        private static readonly Regex _horizontalBoldWithSingleRules = HorizontalRulesRegex("_");
+
+        /// <summary>
+        /// Create regex expression for horizontal rules.
+        /// </summary>
+        /// <param name="markers">String of markers (e.g.: - or -*_).</param>
+        /// <returns>Regex expression.</returns>
+        /// <remarks>
+        /// e.g.
+        /// ---
+        /// - - -
+        /// -  -  -
+        /// </remarks>
+        private static Regex HorizontalRulesRegex(string markers)
+        {
+            return new Regex(@"
+                ^[ ]{0,3}                   # Leading space
+                    ([" + markers + @"])    # $1: First marker ([markers])
+                    (?>                     # Repeated marker group
+                        [ ]{0,2}            # Zero, one, or two spaces.
+                        \1                  # Marker character
+                    ){2,}                   # Group repeated at least twice
+                    [ ]*                    # Trailing spaces
+                    $                       # End of line.
+                ", RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+        }
 
         /// <summary>
         /// Turn Markdown horizontal rules into HTML hr tags
         /// </summary>
-        /// <remarks>
-        /// ***  
-        /// * * *  
-        /// ---
-        /// - - -
-        /// </remarks>
         private IEnumerable<Block> DoHorizontalRules(string text, Func<string, IEnumerable<Block>> defaultHandler)
         {
             if (text is null)
@@ -675,9 +980,15 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(text));
             }
 
-            return Evaluate(text, _horizontalRules, RuleEvaluator, defaultHandler);
+            return Evaluate(text, _horizontalRules, RuleEvaluator,
+                s1 => Evaluate(s1, _horizontalTwoLinesRules, TwoLinesRuleEvaluator,
+                s2 => Evaluate(s2, _horizontalBoldRules, BoldRuleEvaluator,
+                s3 => Evaluate(s3, _horizontalBoldWithSingleRules, BoldWithSingleRuleEvaluator, defaultHandler))));
         }
 
+        /// <summary>
+        /// Single line separator.
+        /// </summary>
         private Block RuleEvaluator(Match match)
         {
             if (match is null)
@@ -685,15 +996,109 @@ namespace Markdown.Xaml
                 throw new ArgumentNullException(nameof(match));
             }
 
-            var separator = new Separator();
-            if (SeparatorStyle != null)
+            return new BlockUIContainer(new Separator()
             {
-                separator.Style = SeparatorStyle;
+                Style = SeparatorStyle
+            });
+        }
+
+        /// <summary>
+        /// Two lines separator.
+        /// </summary>
+        private Block TwoLinesRuleEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
             }
 
-            var container = new BlockUIContainer(separator);
-            return container;
+            var stackPanel = new StackPanel();
+            for (int i = 0; i < 2; i++)
+            {
+                stackPanel.Children.Add(new Separator()
+                {
+                    Style = SeparatorStyle
+                });
+            }
+
+            return new BlockUIContainer(stackPanel);
         }
+
+        /// <summary>
+        /// Double line separator.
+        /// </summary>
+        private Block BoldRuleEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var stackPanel = new StackPanel();
+            for (int i = 0; i < 2; i++)
+            {
+                stackPanel.Children.Add(new Separator()
+                {
+                    Style = SeparatorStyle,
+                    Margin = new Thickness(0)
+                });
+            }
+
+            return new BlockUIContainer(stackPanel);
+        }
+
+        /// <summary>
+        /// Two lines separator consisting of a double line and a single line.
+        /// </summary>
+        private Block BoldWithSingleRuleEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var stackPanel = new StackPanel();
+            for (int i = 0; i < 2; i++)
+            {
+                stackPanel.Children.Add(new Separator()
+                {
+                    Style = SeparatorStyle,
+                    Margin = new Thickness(0)
+                });
+            }
+            stackPanel.Children.Add(new Separator()
+            {
+                Style = SeparatorStyle
+            });
+
+            return new BlockUIContainer(stackPanel);
+        }
+        #endregion Horizontal Rules
+
+        #region List
+        private const string _markerUL = @"[*+=-]";
+        private const string _markerOL = @"\d+[.]|\p{L}+[.,]";
+
+        // Unordered List
+        private const string _markerUL_Disc = @"[*]";
+        private const string _markerUL_Box = @"[+]";
+        private const string _markerUL_Circle = @"[-]";
+        private const string _markerUL_Square = @"[=]";
+
+        // Ordered List
+        private const string _markerOL_Number = @"\d+[.]";
+        private const string _markerOL_LetterLower = @"\p{Ll}+[.]";
+        private const string _markerOL_LetterUpper = @"\p{Lu}+[.]";
+        private const string _markerOL_RomanLower = @"\p{Ll}+[,]";
+        private const string _markerOL_RomanUpper = @"\p{Lu}+[,]";
+
+        private int _listLevel;
+
+        /// <summary>
+        /// Maximum number of levels a single list can have.
+        /// In other words, _listDepth - 1 is the maximum number of nested lists.
+        /// </summary>
+        private const int _listDepth = 6;
 
         private static readonly string _wholeList
             = string.Format(CultureInfo.InvariantCulture, @"
@@ -714,7 +1119,7 @@ namespace Markdown.Xaml
                     {0}[ ]+
                   )
               )
-            )", string.Format(CultureInfo.InvariantCulture, "(?:{0}|{1})", _markerUL, _markerOL), _tabWidth - 1);
+            )", string.Format(CultureInfo.InvariantCulture, "(?:{0}|{1})", _markerUL, _markerOL), _listDepth - 1);
 
         private static readonly Regex _listNested = new Regex(@"^" + _wholeList,
             RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
@@ -750,13 +1155,16 @@ namespace Markdown.Xaml
             string list = match.Groups[1].Value;
             string listType = Regex.IsMatch(match.Groups[3].Value, _markerUL) ? "ul" : "ol";
 
+            // Set text marker style.
+            TextMarkerStyle textMarker = GetTextMarkerStyle(listType, match);
+
             // Turn double returns into triple returns, so that we can make a
             // paragraph for the last item in a list, if necessary:
             list = Regex.Replace(list, @"\n{2,}", "\n\n\n");
 
             var resultList = Create<List, ListItem>(ProcessListItems(list, listType == "ul" ? _markerUL : _markerOL));
 
-            resultList.MarkerStyle = listType == "ul" ? TextMarkerStyle.Disc : TextMarkerStyle.Decimal;
+            resultList.MarkerStyle = textMarker;
 
             return resultList;
         }
@@ -795,7 +1203,7 @@ namespace Markdown.Xaml
                 list = Regex.Replace(list, @"\n{2,}\z", "\n");
 
                 string pattern = string.Format(CultureInfo.InvariantCulture,
-                  @"(\n)?                      # leading line = $1
+                  @"(\n)?                  # leading line = $1
                 (^[ ]*)                    # leading whitespace = $2
                 ({0}) [ ]+                 # list marker = $3
                 ((?s:.+?)                  # list item text = $4
@@ -835,6 +1243,60 @@ namespace Markdown.Xaml
             }
         }
 
+        /// <summary>
+        /// Get the text marker style based on a specific regex.
+        /// </summary>
+        /// <param name="listType">Specify what kind of list: ul, ol.</param>
+        private static TextMarkerStyle GetTextMarkerStyle(string listType, Match match)
+        {
+            switch (listType)
+            {
+                case "ul":
+                    if (Regex.IsMatch(match.Groups[3].Value, _markerUL_Disc))
+                    {
+                        return TextMarkerStyle.Disc;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerUL_Box))
+                    {
+                        return TextMarkerStyle.Box;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerUL_Circle))
+                    {
+                        return TextMarkerStyle.Circle;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerUL_Square))
+                    {
+                        return TextMarkerStyle.Square;
+                    }
+                    break;
+                case "ol":
+                    if (Regex.IsMatch(match.Groups[3].Value, _markerOL_Number))
+                    {
+                        return TextMarkerStyle.Decimal;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_LetterLower))
+                    {
+                        return TextMarkerStyle.LowerLatin;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_LetterUpper))
+                    {
+                        return TextMarkerStyle.UpperLatin;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_RomanLower))
+                    {
+                        return TextMarkerStyle.LowerRoman;
+                    }
+                    else if (Regex.IsMatch(match.Groups[3].Value, _markerOL_RomanUpper))
+                    {
+                        return TextMarkerStyle.UpperRoman;
+                    }
+                    break;
+            }
+            return TextMarkerStyle.None;
+        }
+        #endregion List
+
+        #region Table
         private static readonly Regex _table = new Regex(@"
             (                               # $1 = whole table
                 [ \r\n]*
@@ -843,7 +1305,7 @@ namespace Markdown.Xaml
                 )
                 [ ]*\r?\n[ ]*
                 (                           # $4 = column style
-                    \|(:?-+:?\|)+           # $5
+                    =?\|(:?-+:?\|)+         # $5
                 )
                 (                           # $6 = table row
                     (                       # $7
@@ -875,8 +1337,9 @@ namespace Markdown.Xaml
             var header = match.Groups[2].Value.Trim();
             var style = match.Groups[4].Value.Trim();
             var row = match.Groups[6].Value.Trim();
+            var rowAlt = style.Substring(0, 1) == "=" ? true : false;
 
-            var styles = style.Substring(1, style.Length - 2).Split('|');
+            var styles = style.Substring(1 + Convert.ToInt32(rowAlt), style.Length - (2 + Convert.ToInt32(rowAlt))).Split('|');
             var headers = header.Substring(1, header.Length - 2).Split('|');
             var rowList = row.Split('\n').Select(ritm =>
             {
@@ -889,7 +1352,6 @@ namespace Markdown.Xaml
                     Math.Max(styles.Length, headers.Length),
                     rowList.Select(ritm => ritm.Length).Max()
                 );
-
 
             // table style
             var aligns = new List<TextAlignment?>();
@@ -924,11 +1386,10 @@ namespace Markdown.Xaml
             }
 
             // table
-            var table = new Table();
-            if (TableStyle != null)
+            var table = new Table()
             {
-                table.Style = TableStyle;
-            }
+                Style = TableStyle
+            };
 
             // table columns
             while (table.Columns.Count < maxColCount)
@@ -937,25 +1398,23 @@ namespace Markdown.Xaml
             }
 
             // table header
-            var tableHeaderRG = new TableRowGroup();
-            if (TableHeaderStyle != null)
+            var tableHeaderRG = new TableRowGroup()
             {
-                tableHeaderRG.Style = TableHeaderStyle;
-            }
+                Style = TableHeaderStyle
+            };
 
             var tableHeader = CreateTableRow(headers, aligns);
             tableHeaderRG.Rows.Add(tableHeader);
             table.RowGroups.Add(tableHeaderRG);
 
             // row
-            var tableBodyRG = new TableRowGroup();
-            if (TableBodyStyle != null)
+            var tableBodyRG = new TableRowGroup()
             {
-                tableBodyRG.Style = TableBodyStyle;
-            }
+                Style = TableBodyStyle
+            };
             foreach (string[] rowAry in rowList)
             {
-                var tableBody = CreateTableRow(rowAry, aligns);
+                var tableBody = CreateTableRow(rowAry, aligns, rowAlt && (rowList.IndexOf(rowAry) % 2) == 1 );
                 tableBodyRG.Rows.Add(tableBody);
             }
             table.RowGroups.Add(tableBodyRG);
@@ -963,9 +1422,12 @@ namespace Markdown.Xaml
             return table;
         }
 
-        private TableRow CreateTableRow(string[] txts, List<TextAlignment?> aligns)
+        private TableRow CreateTableRow(string[] txts, List<TextAlignment?> aligns, bool isOddRow = false)
         {
-            var tableRow = new TableRow();
+            var tableRow = new TableRow()
+            {
+                Style = isOddRow ? TableRowAltStyle : null
+            };
 
             foreach (var idx in Enumerable.Range(0, txts.Length))
             {
@@ -990,19 +1452,59 @@ namespace Markdown.Xaml
 
             return tableRow;
         }
+        #endregion Table
 
+        #region CodeBlock
+        private static readonly Regex _codeBlock = new Regex(@"
+                \n
+                («)     # $1 = starting marker «
+                (.+?)   # $2 = Code text
+                »       # closing marker »
+                \n+
+            ", RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Turn Markdown « code block » into HTML code tags
+        /// </summary>
+        private IEnumerable<Block> DoCodeBlock(string text, Func<string, IEnumerable<Block>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            return Evaluate(text, _codeBlock, CodeBlockEvaluator, defaultHandler);
+        }
+
+        private Block CodeBlockEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+            
+            var textAlignment = GetTextAlignment(match.Groups[2].Value);
+            var block = Create<Paragraph, Inline>(RunSpanGamut(Regex.Replace(match.Groups[2].Value, _alignment, "")));
+            block.Style = CodeBlockStyle;
+            block.TextAlignment = textAlignment;
+            return block;
+        }
+        #endregion CodeBlock
+
+        #region CodeSpan
         private static readonly Regex _codeSpan = new Regex(@"
-                    (?<!\\)   # Character before opening ` can't be a backslash
-                    (`+)      # $1 = Opening run of `
-                    (.+?)     # $2 = The code block
-                    (?<!`)
-                    \1
-                    (?!`)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
+                (?<!\\)   # Character before opening ` can't be a backslash
+                (`+)      # $1 = Opening run of `
+                (.+?)     # $2 = The code block
+                (?<!`)
+                \1
+                (?!`)
+            ", RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
 
         /// <summary>
         /// Turn Markdown `code spans` into HTML code tags
         /// </summary>
-        private IEnumerable<Inline> DoCodeSpans(string text, Func<string, IEnumerable<Inline>> defaultHandler)
+        private IEnumerable<Inline> DoCodeSpan(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
             if (text is null)
             {
@@ -1044,30 +1546,32 @@ namespace Markdown.Xaml
             string span = match.Groups[2].Value;
             span = Regex.Replace(span, @"^[ ]*", ""); // leading whitespace
             span = Regex.Replace(span, @"[ ]*$", ""); // trailing whitespace
+            span = " " + span + " ";
 
-            var result = new Run(span);
-            if (CodeStyle != null)
+            return new Run(span) 
             {
-                result.Style = CodeStyle;
-            }
-
-            return result;
+                Style = CodeSpanStyle
+            };
         }
+        #endregion CodeSpan
 
-        private static readonly Regex _bold = new Regex(@"(\*\*|__) (?=\S) (.+?[*_]*) (?<=\S) \1",
-            RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
-        private static readonly Regex _strictBold = new Regex(@"([\W_]|^) (\*\*|__) (?=\S) ([^\r]*?\S[\*_]*) \2 ([\W_]|$)",
+        #region Text Decorations
+        private static readonly Regex _bold = new Regex(@"(\*\*) (?=\S) (.+?[*_]*) (?<=\S) \1",
             RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
 
-        private static readonly Regex _italic = new Regex(@"(\*|_) (?=\S) (.+?) (?<=\S) \1",
+        private static readonly Regex _italic = new Regex(@"(\*) (?=\S) (.+?) (?<=\S) \1",
             RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
-        private static readonly Regex _strictItalic = new Regex(@"([\W_]|^) (\*|_) (?=\S) ([^\r\*_]*?\S) \2 ([\W_]|$)",
+
+        private static readonly Regex _strikethrough = new Regex(@"(__) (?=\S) (.+?[*_]*) (?<=\S) \1",
+            RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static readonly Regex _underline = new Regex(@"(_) (?=\S) (.+?) (?<=\S) \1",
             RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.Compiled);
 
         /// <summary>
         /// Turn Markdown *italics* and **bold** into HTML strong and em tags
         /// </summary>
-        private IEnumerable<Inline> DoItalicsAndBold(string text, Func<string, IEnumerable<Inline>> defaultHandler)
+        private IEnumerable<Inline> DoTextDecorations(string text, Func<string, IEnumerable<Inline>> defaultHandler)
         {
             if (text is null)
             {
@@ -1075,18 +1579,22 @@ namespace Markdown.Xaml
             }
 
             // <strong> must go first, then <em>
-            if (StrictBoldItalic)
+            return Evaluate<Inline>(text, _bold, m => BoldEvaluator(m, 2),
+                s1 => Evaluate<Inline>(s1, _italic, m => ItalicEvaluator(m, 2),
+                s2 => Evaluate<Inline>(s2, _strikethrough, m => StrikethroughEvaluator(m, 2),
+                s3 => Evaluate<Inline>(s3, _underline, m => UnderlineEvaluator(m, 2),
+                s4 => defaultHandler(s4)))));
+        }
+
+        private Inline BoldEvaluator(Match match, int contentGroup)
+        {
+            if (match is null)
             {
-                return Evaluate<Inline>(text, _strictBold, m => BoldEvaluator(m, 3),
-                    s1 => Evaluate<Inline>(s1, _strictItalic, m => ItalicEvaluator(m, 3),
-                    s2 => defaultHandler(s2)));
+                throw new ArgumentNullException(nameof(match));
             }
-            else
-            {
-                return Evaluate<Inline>(text, _bold, m => BoldEvaluator(m, 2),
-                   s1 => Evaluate<Inline>(s1, _italic, m => ItalicEvaluator(m, 2),
-                   s2 => defaultHandler(s2)));
-            }
+
+            var content = match.Groups[contentGroup].Value;
+            return Create<Bold, Inline>(RunSpanGamut(content));
         }
 
         private Inline ItalicEvaluator(Match match, int contentGroup)
@@ -1100,7 +1608,7 @@ namespace Markdown.Xaml
             return Create<Italic, Inline>(RunSpanGamut(content));
         }
 
-        private Inline BoldEvaluator(Match match, int contentGroup)
+        private Inline StrikethroughEvaluator(Match match, int contentGroup)
         {
             if (match is null)
             {
@@ -1108,8 +1616,85 @@ namespace Markdown.Xaml
             }
 
             var content = match.Groups[contentGroup].Value;
-            return Create<Bold, Inline>(RunSpanGamut(content));
+            return Create<Strikethrough, Inline>(RunSpanGamut(content));
         }
+
+        private Inline UnderlineEvaluator(Match match, int contentGroup)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            var content = match.Groups[contentGroup].Value;
+            return Create<Underline, Inline>(RunSpanGamut(content));
+        }
+        #endregion Text Decorations
+
+        #region Color
+        private static readonly Regex _color = new Regex(
+            string.Format(CultureInfo.InvariantCulture, @"
+                (                           # wrap whole match in $1
+                    color\/\[
+                        ({0})               # color brush name = $2
+                    \]
+                    \(                      # literal paren
+                        [ ]*
+                        ({1})               # text = $3
+                        [ ]*
+                    \)
+                )", GetNestedBracketsPattern(), GetNestedParensPatternWithWhiteSpace()),
+                  RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Color spans.
+        /// </summary>
+        /// <remarks>
+        /// color/[ColorBrushName or HexColor](text to color) 
+        /// ColorBrushName is not case sensitive
+        /// HexColor e.g. #29F, #FFFFFF, #88000000
+        /// </remarks>
+        private IEnumerable<Inline> DoColor(string text, Func<string, IEnumerable<Inline>> defaultHandler)
+        {
+            if (text is null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+            return Evaluate(text, _color, ColorEvaluator, defaultHandler);
+        }
+
+        private Inline ColorEvaluator(Match match)
+        {
+            if (match is null)
+            {
+                throw new ArgumentNullException(nameof(match));
+            }
+
+            string text = match.Groups[3].Value;
+            text = Regex.Replace(text, @"^[ ]*", ""); // leading whitespace
+            text = Regex.Replace(text, @"[ ]*$", ""); // trailing whitespace
+
+            var span = Create<Span, Inline>(RunSpanGamut(text));
+
+            try
+            {
+                if (new Regex(@"^\#").IsMatch(match.Groups[2].Value))
+                {
+                    span.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom(match.Groups[2].Value));
+                }
+                else
+                {
+                    span.Foreground = (SolidColorBrush)new BrushConverter().ConvertFromString(match.Groups[2].Value);
+                }
+            }
+            catch
+            {
+                span.Foreground = Brushes.Black;
+            }
+
+            return span;
+        }
+        #endregion Color
 
         private static readonly Regex _outDent = new Regex(@"^[ ]{1," + _tabWidth + @"}", RegexOptions.Multiline | RegexOptions.Compiled);
 
@@ -1127,7 +1712,7 @@ namespace Markdown.Xaml
         /// makes sure text ends with a couple of newlines; 
         /// removes any blank lines (only spaces) in the text
         /// </summary>
-        private string Normalize(string text)
+        private static string Normalize(string text)
         {
             if (text is null)
             {
@@ -1180,6 +1765,31 @@ namespace Markdown.Xaml
 
             // add two newlines to the end before return
             return output.Append("\n\n").ToString();
+        }
+
+        /// <summary>
+        /// Return text alignment for the document based on a specific marker.
+        /// </summary>
+        private static TextAlignment GetTextAlignment(string text)
+        {
+            if (new Regex(@"^\|-\|").IsMatch(text) ||
+                new Regex(@"^\|:-\|").IsMatch(text))
+            {
+                return TextAlignment.Left;
+            }
+            if (new Regex(@"^\|-:\|").IsMatch(text))
+            {
+                return TextAlignment.Right;
+            }
+            if (new Regex(@"^\|:-:\|").IsMatch(text))
+            {
+                return TextAlignment.Center;
+            }
+            if (new Regex(@"^\|=\|").IsMatch(text))
+            {
+                return TextAlignment.Justify;
+            }
+            return defaultTextAlignment;
         }
 
         /// <summary>
@@ -1248,7 +1858,7 @@ namespace Markdown.Xaml
         private static readonly Regex _eoln = new Regex("\\s+");
         private static readonly Regex _lbrk = new Regex(@"\ {2,}\n");
 
-        public IEnumerable<Inline> DoText(string text)
+        public static IEnumerable<Inline> DoText(string text)
         {
             if (text is null)
             {
@@ -1266,6 +1876,16 @@ namespace Markdown.Xaml
                 var t = _eoln.Replace(line, " ");
                 yield return new Run(t);
             }
+        }
+    }
+
+
+
+    class Strikethrough : Span
+    {
+        public Strikethrough()
+        {
+            TextDecorations = System.Windows.TextDecorations.Strikethrough;
         }
     }
 }
