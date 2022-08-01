@@ -52,7 +52,12 @@
             <Setter Property="TextDecorations"
                     Value="None" />
         </Style>
-
+   
+        <Style x:Key="CodeStyle" TargetType="Run">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="Background" Value="LightGray" />
+        </Style>
+   
         <Style x:Key="ImageStyle"
                TargetType="Image">
           <Setter Property="RenderOptions.BitmapScalingMode"
